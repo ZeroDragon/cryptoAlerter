@@ -1,0 +1,9 @@
+{
+  "watch" : [
+    "app/controllers",
+    "app/models",
+    "app.coffee",
+    "routes.coffee",
+    "config.json"
+  ]
+}

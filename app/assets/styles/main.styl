@@ -1,0 +1,55 @@
+@import 'app/assets/styles/fonts.styl'
+body
+	margin 0
+	font-family Arial, sans-serif
+	*
+		box-sizing border-box
+header
+	background-color #eee
+	border-bottom 1px solid #ddd
+	box-shadow 0px 1px 5px #aaa
+	.adder
+		display inline-block
+	.status
+		float right
+		i
+			color #ccc
+			margin-left 10px
+			&:hover, &.active
+				color #444
+.container
+	max-width 1000px
+	margin auto
+	padding 10px 0
+.items
+	width 100%
+	float left
+	.item
+		padding 4px
+		position relative
+		.botones
+			position absolute
+			top 7px
+			left 4px
+			height 19px
+			background-color #445
+			&>div
+				display inline-block
+				width 15px
+				height 15px
+				border-radius 50%
+				text-align center
+				font-size 10px
+				line-height 14px
+				vertical-align top
+				cursor pointer
+				&:hover
+					color #fff
+			.cerrar
+				background-color #fc6356
+				margin 2px 2px 2px 4px
+				color #fc6356
+			.minimizar
+				background-color #27ca45
+				margin 2px 4px 2px 2px
+				color #27ca45

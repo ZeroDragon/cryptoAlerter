@@ -1,0 +1,31 @@
+doctype html
+html(lang="es")
+	head
+		meta(charset="utf-8")
+		meta(name="viewport" content="width=device-width, initial-scale=1")
+		title Crypto Alerter
+		script(src="scripts/jquery.js")
+		link(rel="stylesheet",href="/styles/main.css")
+		
+		script(src="https://code.highcharts.com/highcharts.js")
+		link(rel="stylesheet" href="/styles/coinData.css")
+
+		script(src="scripts/main.js")
+
+	body
+		header
+			.container
+				i.fa.fa-bitcoin
+				|itcoin Alerter 
+				.adder
+					| | Add Watcher 
+					select#adder
+						for coin in coins
+							option(value="#{coin.code}") #{coin.name}
+					| 
+					input(type="button",value="Add",onclick="addItem($('#adder').val())")
+				.status
+					i.fa.fa-refresh(title="Refresh",onclick="populateItems()")
+					i.fa.fa-save(title="Save",onclick="saveArr()")
+		.container
+			.items

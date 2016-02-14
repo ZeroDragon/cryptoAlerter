@@ -1,0 +1,76 @@
+script.
+	var coin#{coin.code} = !{JSON.stringify(coin)};
+
+table(border="0",cellpadding="4",cellspacing="0").table
+	tr
+		th Name
+		th Code
+		th USD
+		th MXN
+		th Hour
+		th Day
+		th Week
+	tr
+		td #{coin.name}
+		td #{coin.code}
+		td $#{addCommas(coin.usd)}
+		td $#{addCommas(coin.mxn)}
+		- upOrDown = coin.historic.h < 0? 'red' : ''
+		td(class="#{upOrDown}") #{addCommas(coin.historic.h)}%
+		- upOrDown = coin.historic.d < 0? 'red' : ''
+		td(class="#{upOrDown}") #{addCommas(coin.historic.d)}%
+		- upOrDown = coin.historic.w < 0? 'red' : ''
+		td(class="#{upOrDown}") #{addCommas(coin.historic.w)}%
+	tr
+		td(colspan="7")
+			div(id="chart#{coin.code}")
+
+.botones
+	.cerrar(onclick="delItem('#{coin.code}');") x
+
+script.
+	Highcharts.setOptions({
+		global: {
+			useUTC: false
+		}
+	});
+	
+	$("#chart"+coin#{coin.code}.code).highcharts({
+		chart: {
+			height: 150,
+			zoomType: 'x'
+		},
+		title: {
+			text: ""
+		},
+		xAxis: {
+			type: 'datetime',
+			labels: {
+				formatter: function () {
+					return Highcharts.dateFormat('%H:%M', this.value);
+				}
+			},
+			tickInterval: 10*60*1000
+		},
+		yAxis: {
+			title: {
+				text: ''
+			},
+		},
+		legend: {
+			enabled: false
+		},
+		credits: {
+			enabled: false
+		},
+		plotOptions: {
+			line: {
+				animation: false
+			}
+		},
+		series: [{
+			type: 'line',
+			name: coin#{coin.code}.code+" to USD",
+			data: coin#{coin.code}.data
+		}]
+	});

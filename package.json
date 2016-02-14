@@ -1,0 +1,19 @@
+{
+  "name": "cryptoalerter",
+  "version": "1.0.0",
+  "description": "A webapp/robot to alert status of cryptocurrency",
+  "main": "app.coffee",
+  "scripts": {
+    "test": "nodemon",
+    "start": "coffee app.coffee"
+  },
+  "author": "ZeroDragon <npm@zerothedragon.com>",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^1.5.2",
+    "chaitea-framework": "1.0.17",
+    "cheerio": "^0.20.0",
+    "redis": "^2.4.2",
+    "request": "^2.69.0"
+  }
+}
