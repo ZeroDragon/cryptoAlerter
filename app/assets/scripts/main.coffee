@@ -14,10 +14,10 @@ loadArr = ->
 		arr = []
 
 populateItems = ->
-	$('.items').html ''
 	for item in arr
 		((coin)->
-			$('.items').append("<div class='item' id='#{coin}'></div>")
+			if $("##{coin}").length is 0
+				$('.items').append("<div class='item' id='#{coin}'></div>")
 			$('header .status .fa-refresh').addClass('active')
 			$.get "/status/#{coin}", (html)->
 				$("##{coin}").html html
@@ -27,6 +27,7 @@ uniques = (a)-> a.filter (e,i,s)-> s.indexOf(e) is i
 
 delItem = (coin)->
 	arr = arr.filter (e)-> e isnt coin
+	$("##{coin}").remove()
 	populateItems()
 	saveArr()
 addItem = (val)->
