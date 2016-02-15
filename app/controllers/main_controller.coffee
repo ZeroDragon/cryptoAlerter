@@ -9,4 +9,7 @@ exports.home = (req,res)->
 			return -1 if b.name > a.name
 			return 1 if b.name < a.name
 			return 0
-		res.render CT_Static + '/main/index.jade',{coins:coins}
+		res.render CT_Static + '/main/index.jade',{
+			coins:coins,
+			pretty:true
+		}
