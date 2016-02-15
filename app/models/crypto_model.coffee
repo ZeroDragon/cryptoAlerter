@@ -3,6 +3,7 @@ async = require 'async'
 
 cacheData = []
 expiration = 0
+working = false
 
 _elData = (cb)->
 	async.parallel({
@@ -101,12 +102,15 @@ cacheRates = (cb)->
 	if cacheData.length is 0
 		wait4data = true
 	if new Date().getTime() > expiration
-		console.log "Buscando nueva información"
-		_elData (rows)->
-			expiration = new Date().getTime() + (60*1000)
-			cacheData = rows
-			saveToRedis()
-			cb(cacheData) if wait4data
+		unless working
+			console.log "Buscando nueva información"
+			working = true
+			_elData (rows)->
+				working = false
+				expiration = new Date().getTime() + (60*1000)
+				cacheData = rows
+				saveToRedis()
+				cb(cacheData) if wait4data
 	if !wait4data
 		cb cacheData
 
