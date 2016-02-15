@@ -9,6 +9,7 @@ _elData = (cb)->
 	async.parallel({
 		crypto : (callback)->
 			request.get 'http://coinmarketcap.com/all/views/all/', (err,response,body)->
+				throw err if err
 				$ = cheerio.load body
 				rs = $('#currencies-all tbody tr')
 				delete rs.options
@@ -32,6 +33,7 @@ _elData = (cb)->
 
 		usd : (callback)->
 			request.get 'http://finance.yahoo.com/q?s=MXNUSD=X', (err,response,body)->
+				throw err if err
 				$ = cheerio.load body
 				mxpRate = $('.time_rtq_ticker')[0].children[0].children[0].data
 				r = [
@@ -79,9 +81,10 @@ saveToRedis = ()->
 	addZ = (i)-> ('00'+i).slice(-2)
 	console.log "Saving To Redis #{d.getFullYear()}-#{addZ(d.getMonth()+1)}-#{addZ(d.getDate())}@#{addZ(d.getHours())}:#{addZ(d.getMinutes())}"
 	last12Hours = new Date(d.getTime())
-	last12Hours.setHours(last12Hours.getHours()-24)
+	last12Hours.setHours(last12Hours.getHours()-1)
 	last12Hours = ~~(last12Hours.getTime()/1000)
 	brain.get "cryptoAlerter:storage", (err,d)->
+		throw err if err
 		data = {coins:{}}
 		data = JSON.parse(d) if d
 		for item in cacheData
@@ -94,8 +97,8 @@ saveToRedis = ()->
 			data.coins[item.code] = {}
 			for i in arr
 				data.coins[item.code][i.k] = i.v
-			
-		brain.set "cryptoAlerter:storage", JSON.stringify(data)
+		brain.set "cryptoAlerter:storage", JSON.stringify(data), (err,reply)->
+			throw err if err
 
 cacheRates = (cb)->
 	wait4data = false
