@@ -18,6 +18,63 @@ header
 			margin-left 10px
 			&:hover, &.active
 				color #444
+footer
+	display block
+	clear both
+	margin 5px 0
+	width 100%
+	text-align center
+	font-size 12px
+	a
+		color inherit
+		line-height 42px
+		vertical-align middle
+		&:hover
+			img
+				width 40px
+		img
+			vertical-align middle
+			width 0
+			border-radius 50%
+			transition all 0.5s ease
+.modal
+	display none
+	position fixed
+	top 0
+	left 0
+	width 100%
+	height 100%
+	background-color rgba(0,0,0,0.4)
+	.gparent
+		position relative
+		width 100%
+		height 100%
+		.parent
+			position absolute
+			top 50%
+			left 50%
+			-webkit-transform translate(-50%,-50%)
+			min-width 600px
+			height 400px
+			background-color #fff
+			border-radius 10px
+			padding 20px
+			text-align center
+			.son
+				position relative
+			.close
+				position absolute
+				top -30px
+				right -30px
+				border-radius 50%
+				width 25px
+				height 25px
+				background-color #000
+				color #fff
+				font-size 15px
+				line-height 23px
+				cursor pointer
+			
 .container
 	margin auto
 	max-width 1200px
