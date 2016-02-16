@@ -1,49 +1,21 @@
-doctype html
-html(lang="es")
-	head
-		meta(charset="utf-8")
-		meta(name="viewport" content="width=device-width, initial-scale=1")/
-		title Crypto Alerter
-		script(src="scripts/jquery.js")
-		link(rel="stylesheet",href="/styles/main.css")
-		
-		script(src="https://code.highcharts.com/highcharts.js")
-		link(rel="stylesheet" href="/styles/coinData.css")
-
-		script(src="scripts/main.js")
-
-	body
-		header
-			.container
-				|Crypto Alerter 
-				.adder
-					| | Add Watcher 
-					select#adder
-						for coin in coins
-							option(value="#{coin.code}") #{coin.name}
-					| 
-					input(type="button",value="Add",onclick="addItem($('#adder').val())")
-				.status
-					i.fa.fa-refresh(title="Refresh",onclick="populateItems()")
-					i.fa.fa-save(title="Save",onclick="saveArr()")
-		.container
-			.items
-		footer
-			a(href="http://floresbenavides.com",target="_blank")
-				|Created by 
-				img(src="http://www.gravatar.com/avatar/90a0947bc0ffec1b239d6e48fd8c4dd2?s=200")
-				|ZeroDragon
-			|  | 
-			a(href="https://github.com/ZeroDragon/cryptoAlerter",target="_blank") Fork me at github
-			|  | 
-			a(href="javascript:;",onClick="$('.modal').show()",target="_blank") Found this useful?
-		.modal
-			.gparent
-				.parent
-					.son
-						|Send me love to:
-						br
-						img(src="/images/1G7k3tH43hEsh1sjW4BKGYtev15Txmbc9K.png")
-						br
-						|1G7k3tH43hEsh1sjW4BKGYtev15Txmbc9K
-						.close(onClick="$('.modal').hide()") x
+extends ../layouts/main.jade
+block styles
+	link(rel="stylesheet",href="/styles/main.css")
+	link(rel="stylesheet" href="/styles/coinData.css")
+block scripts
+	script(src="https://code.highcharts.com/highcharts.js")
+	script(src="scripts/main.js")
+block header
+	.adder
+		| | Add Watcher 
+		select#adder
+			for coin in coins
+				option(value="#{coin.code}") #{coin.name}
+		| 
+		input(type="button",value="Add",onclick="addItem($('#adder').val())")
+	.status
+		i.fa.fa-refresh(title="Refresh",onclick="populateItems()")
+		i.fa.fa-save(title="Save",onclick="saveArr()")
+block body
+	.container
+		.items

@@ -80,9 +80,9 @@ saveToRedis = ()->
 	stamp = ~~(stamp / 60) * 60
 	addZ = (i)-> ('00'+i).slice(-2)
 	console.log "Saving To Redis #{d.getFullYear()}-#{addZ(d.getMonth()+1)}-#{addZ(d.getDate())}@#{addZ(d.getHours())}:#{addZ(d.getMinutes())}"
-	last12Hours = new Date(d.getTime())
-	last12Hours.setHours(last12Hours.getHours()-1)
-	last12Hours = ~~(last12Hours.getTime()/1000)
+	# last12Hours = new Date(d.getTime())
+	# last12Hours.setHours(last12Hours.getHours()-1)
+	# last12Hours = ~~(last12Hours.getTime()/1000)
 	brain.get "cryptoAlerter:storage", (err,d)->
 		throw err if err
 		data = {coins:{}}
@@ -93,7 +93,8 @@ saveToRedis = ()->
 			arr = []
 			for own k,v of data.coins[item.code]
 				arr.push {k:~~k,v:v}
-			arr = arr.filter (e)-> e.k > last12Hours
+			arr = arr[-60..]
+			# arr = arr.filter (e)-> e.k > last12Hours
 			data.coins[item.code] = {}
 			for i in arr
 				data.coins[item.code][i.k] = i.v
