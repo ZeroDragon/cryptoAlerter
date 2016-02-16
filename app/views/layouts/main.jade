@@ -5,6 +5,7 @@ html(lang="es")
 		meta(name="viewport" content="width=device-width, initial-scale=1")/
 		title #{title}
 		script(src="scripts/jquery.js")
+		link(rel="stylesheet",href="/styles/layout.css")
 		block styles
 		block scripts
 
@@ -23,6 +24,19 @@ html(lang="es")
 			a(href="https://github.com/ZeroDragon/cryptoAlerter",target="_blank") Fork me at github
 			|  | 
 			a(href="javascript:;",onClick="$('.modal').show()",target="_blank") Found this useful?
+		.rmenu#rmenu
+			a(href="/").clickme.row
+				i.fa.fa-stats
+				|  Homepage
+			a(href="/trends").clickme.row
+				i.fa.fa-sort
+				|  Trend
+			a(href="javascript:;").clickme.row
+				i.fa.fa-exclamation-sign
+				|  AlertBot (soon)
+			.row.clickme(onClick="$('#rmenu').css({width:0})")
+				i.fa.fa-arrow-right
+				|  Close
 		.modal
 			.gparent
 				.parent
