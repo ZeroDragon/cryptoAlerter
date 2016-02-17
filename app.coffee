@@ -7,6 +7,7 @@ rClient.on 'connect', ->
 	CT_Infusion {
 		request : require 'request'
 		brain : rClient
+		botModel : CT_LoadModel 'bot'
 		addCommas : (x)->
 			parts = x.toString().split(".")
 			parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")

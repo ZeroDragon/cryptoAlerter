@@ -1,6 +1,8 @@
 extends ../layouts/main.jade
-block styles
+//- block styles
 	link(rel="stylesheet",href="/styles/main.css")
+block scripts
+	script(src="/scripts/alerts.js")
 block header
 	.status
 		i.fa.fa-menu-hamburger(title="Menu",onclick="$('#rmenu').css({width:'200px'})")
@@ -9,6 +11,14 @@ block body
 		.row
 			|Username: 
 			input(type="text")#username
+			input(type="button", value="Ask for code")#confirm
+			.message
+				|Send 
+				b#code /confirm #####
+				|  to 
+				a(href="https://telegram.me/CryptoAlerterBot") @CryptoAlerterBot
+				|  on telegram to finish
+			.message2 Confirmado
 		.coinAlerts
 			.row: .name BTC
 			.row
