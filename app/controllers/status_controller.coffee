@@ -68,6 +68,24 @@ exports.trends = (req,res)->
 		rising = ratesData.filter (e)-> e.action is 'Rising'
 		declining = ratesData.filter (e)-> e.action is 'Declining'
 
+		toDisplay = [].concat buy,sell,rising,declining,still
+		crypto.saveParsed toDisplay
+
 		res.render CT_Static + '/coins/trends.jade',{
-			coins : [].concat buy,sell,rising,declining,still
+			coins : toDisplay
+			title : 'Crypto Alerter - Trends'
+		}
+
+exports.alerts = (req,res)->
+	crypto.getRates (rates)->
+		coins = []
+		for rate in rates
+			coins.push {name:rate.name,code:rate.code}
+		coins.sort (a,b)->
+			return -1 if b.name > a.name
+			return 1 if b.name < a.name
+			return 0
+		res.render CT_Static + '/coins/alerts.jade',{
+			coins:coins,
+			title : 'Crypto Alerter - Alerts'
 		}

@@ -121,3 +121,10 @@ cacheRates = (cb)->
 exports.getRates = (cb)->
 	cacheRates (data)->
 		cb data
+
+exports.saveParsed = (toDisplay)->
+	cloned = JSON.parse(JSON.stringify(toDisplay))
+	toSave = cloned.filter (e)-> e.action isnt 'Not moving'
+	brain.set "cryptoAlerter:trend", JSON.stringify(toSave), (err,reply)->
+		throw err if err
+	
