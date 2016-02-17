@@ -1,0 +1,38 @@
+extends ../layouts/main.jade
+block styles
+	link(rel="stylesheet",href="/styles/main.css")
+block header
+	.status
+		i.fa.fa-menu-hamburger(title="Menu",onclick="$('#rmenu').css({width:'200px'})")
+block body
+	.container
+		.row
+			|Username: 
+			input(type="text")#username
+		.coinAlerts
+			.row: .name BTC
+			.row
+				input(type="checkbox")
+				|Minimum Value
+				input(type="text")
+			.row
+				input(type="checkbox")
+				|Maximum Value
+				input(type="text")
+			.row
+				input(type="checkbox")
+				|Sell alert
+			.row
+				input(type="checkbox")
+				|Buy alert
+			.row
+				input(type="checkbox")
+				|Rising alert
+			.row
+				input(type="checkbox")
+				|Declining alert
+
+		select#coinSelector
+			for coin in coins
+				option(value="#{coin.code}") #{coin.name}
+		input(type="button",value="Add Coin Alert")
