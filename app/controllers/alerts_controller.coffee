@@ -90,4 +90,4 @@ exports.triggerAlerts = (req,res)->
 
 exports.unlimited = (req,res)->
 	botModel.gotPayment req.query, ->
-	res.sendStatus 200
+	res.send '*ok*'
