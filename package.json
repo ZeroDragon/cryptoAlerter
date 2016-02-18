@@ -4,7 +4,7 @@
   "description": "A webapp/robot to alert status of cryptocurrency",
   "main": "app.coffee",
   "scripts": {
-    "test": "nodemon",
+    "test": "DEV=true nodemon",
     "start": "coffee app.coffee"
   },
   "author": "ZeroDragon <npm@zerothedragon.com>",

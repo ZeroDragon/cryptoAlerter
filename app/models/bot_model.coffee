@@ -1,20 +1,10 @@
 TelegramBot = require('node-telegram-bot-api')
-bot = new TelegramBot(config.telegramToken, {polling: true})
+if process.env.DEV?
+	bot ={ onText : ()->}
+else
+	bot = new TelegramBot(config.telegramToken, {polling: true})
 async = require 'async'
 crypto = CT_LoadModel 'crypto'
-
-bot.onText /\/help$/i, (msg)->
-	console.log msg.from.id
-	bot.sendMessage msg.from.id, """
-		/start: Will start a relation with you
-		/end: Don't want me anymore?
-	"""
-
-bot.onText /\/start$/i, (msg)->
-	bot.sendMessage msg.from.id, "Started a relation with @#{msg.from.username} ❤️"
-
-bot.onText /\/stop$/i, (msg)->
-	bot.sendMessage msg.from.id, "@#{msg.from.username}: We are not together anymore 💔"
 
 bot.onText /\/rate (.*)$/, (msg,match)->
 	brain.get "cryptoAlerter:trend", (err,d)->
@@ -27,6 +17,8 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 			*Action:* _#{data.action}_
 		"""
 		bot.sendMessage msg.from.id, message, {parse_mode:"Markdown"}
+
+# bot.onText /\/activate (.*) untill (.*)$/, (msg,match)->
 
 confirmed = (username,userid)->
 	_deleteConfirmation = ->
@@ -64,7 +56,7 @@ bot.onText /\/confirm (.*)$/, (msg,match)->
 		else
 			bot.sendMessage msg.from.id, "Code not recognized"
 
-exports.triggerAlerts = (cb)->
+exports.triggerAlerts = (type,cb)->
 	sendMessages = (alertsGrouped)->
 		for own userid, alerts of alertsGrouped
 
@@ -92,7 +84,12 @@ exports.triggerAlerts = (cb)->
 		{
 			userAlerts : (cb)-> brain.get "cryptoAlerter:userAlerts", (err,d)->
 				d ?= '{}'
-				cb err, JSON.parse(d)
+				d = JSON.parse d
+				r = {}
+				for own k,v of d
+					if v.active.toString() is type
+						r[k] = v
+				cb err, r
 			trend : (cb)-> brain.get "cryptoAlerter:trend", (err,d)->
 				d ?= '{}'
 				cb err, JSON.parse(d)
@@ -112,7 +109,6 @@ exports.triggerAlerts = (cb)->
 							alert['Value over Maximum'] = "$"+addCommas((filteredTrend.usd).toFixed(3))
 						if alertData['minimum-active'] and alertData['minimum-value'] > filteredTrend.usd
 							alert['Value under Minimum'] = "$"+addCommas((filteredTrend.usd).toFixed(3))
-						alert['Current Value'] = "$"+addCommas((filteredTrend.usd).toFixed(3))
 						if alertData.sell and filteredTrend.action is 'Let me go'
 							alert['Ready to sell'] = 'Check the market!'
 						if alertData.buy and filteredTrend.action is 'Buy me!'
@@ -126,6 +122,7 @@ exports.triggerAlerts = (cb)->
 							alert.code = filteredTrend.code
 							alert.username = setup.username
 							alert.userid = setup.id
+							alert['Current Value'] = "$"+addCommas((filteredTrend.usd).toFixed(3))
 							alerts.push alert
 			groupByUsers = {}
 			for alert in alerts

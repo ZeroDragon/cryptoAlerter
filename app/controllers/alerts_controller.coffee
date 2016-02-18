@@ -85,5 +85,5 @@ exports.saveUserAlerts = (req,res)->
 	res.sendStatus 200
 
 exports.triggerAlerts = (req,res)->
-	botModel.triggerAlerts ->
+	botModel.triggerAlerts req.params.type, ->
 	res.sendStatus 200
