@@ -1,0 +1,11 @@
+{
+	"port" : 1339,
+	"session_secret" : "my secret session stuff (string)",
+	"timezone" : "America/Mexico_City",
+	"telegramToken" : "GET ONE WITH @Botfather (string)",
+	"telegramAdmin" : "put here your telegram ID (int)",
+	"blockchain" : {
+		"API":"Blockchain payment API",
+		"xPub":"Blockchain Wallet xPub"
+	}
+}
