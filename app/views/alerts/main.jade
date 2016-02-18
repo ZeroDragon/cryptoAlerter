@@ -1,6 +1,6 @@
 extends ../layouts/main.jade
-//- block styles
-	link(rel="stylesheet",href="/styles/main.css")
+block styles
+	link(rel="stylesheet",href="/styles/alerts.css")
 block scripts
 	script(src="/scripts/alerts.js")
 block header
@@ -8,41 +8,69 @@ block header
 		i.fa.fa-menu-hamburger(title="Menu",onclick="$('#rmenu').css({width:'200px'})")
 block body
 	.container
-		.row
-			|Username: 
-			input(type="text")#username
-			input(type="button", value="Ask for code")#confirm
-			.message
+		#needLogin.hidden
+			.notice No userdata registered on this computer, we need to link your telegram account to the bot before you can configure your alerts. <br/> Don't worry you'll only need to do this once, after that, we'll save your information on this computer.
+			.row.login
+				|Username: 
+				input(type="text").username#username
+				input(type="button", value="Get a confirmation code").confirm#confirm
+			.row.message.hidden
 				|Send 
 				b#code /confirm #####
 				|  to 
 				a(href="https://telegram.me/CryptoAlerterBot") @CryptoAlerterBot
-				|  on telegram to finish
-			.message2 Confirmado
-		.coinAlerts
-			.row: .name BTC
-			.row
-				input(type="checkbox")
-				|Minimum Value
-				input(type="text")
-			.row
-				input(type="checkbox")
-				|Maximum Value
-				input(type="text")
-			.row
-				input(type="checkbox")
-				|Sell alert
-			.row
-				input(type="checkbox")
-				|Buy alert
-			.row
-				input(type="checkbox")
-				|Rising alert
-			.row
-				input(type="checkbox")
-				|Declining alert
+				|  on telegram to finish. This code will only be valid for 1 hour
+				.confirming waiting for code
+		#loggedIn.hidden
+			.row2
+				.col2
+					.accountStatus
+						.hero Welcome, <b>#username</b>!
+						br
+						.stat
+							|Currently your account is
+							br
+							|<b>#status</b>
+							.expiration
+								|Expiration date:
+								br
+								b untill
+						br
+						.stat.btn(onClick="reloadInfo();") Reload my information
+						//- .stat.btn Make a donation
+						.stat.btn(onClick="saveValues();") Save all changes
+						.stat.btn(onClick="logout();") Logout
+				.col10
+					.message.inactive.hidden Currently your account is <b>"Limited"</b>.<br/>This means that you can only receive 1 notification per hour and can only setup 1 currency at a time. <br/>If you want to become <b>"Unlimited"</b>, send <b>/unlimited</b> to <a href="https://telegram.me/CryptoAlerterBot" target="_blank">@CryptoAlerterBot</a> to get a deposit address.
+					select#coinSelector
+						for coin in coins
+							option(value="#{coin.code}|#{coin.name}") #{coin.name}
+					input(type="button",value="Add Coin Alert").adder#adder
 
-		select#coinSelector
-			for coin in coins
-				option(value="#{coin.code}") #{coin.name}
-		input(type="button",value="Add Coin Alert")
+					.alerts
+
+					.hidden
+						.template.item
+							.row: .name NAME
+							.row
+								input(type="hidden",data-coin="CODE",data-name="name",value="NAME").alertInput
+								input(type="checkbox",data-coin="CODE",data-name="maximum-active").alertInput
+								|Maximum Value
+								input(type="text",data-coin="CODE",data-name="maximum-value").alertInput
+							.row
+								input(type="checkbox",data-coin="CODE",data-name="minimum-active").alertInput
+								|Minimum Value
+								input(type="text",data-coin="CODE",data-name="minimum-value").alertInput
+							.row
+								input(type="checkbox",data-coin="CODE",data-name="sell").alertInput
+								|Sell alert
+							.row
+								input(type="checkbox",data-coin="CODE",data-name="buy").alertInput
+								|Buy alert
+							.row
+								input(type="checkbox",data-coin="CODE",data-name="rising").alertInput
+								|Rising alert
+							.row
+								input(type="checkbox",data-coin="CODE",data-name="declining").alertInput
+								|Declining alert
+							.delete(onClick="deleteAlert('CODE')") x

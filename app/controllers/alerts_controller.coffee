@@ -21,19 +21,65 @@ exports.askForConfirmation = (req,res)->
 		d ?= '{}'
 		d = JSON.parse d
 		guid = createguid().split('-').map((e)-> e[0]).join('')
-		d[req.body.user] = guid
-		brain.set "cryptoAlerter:confirmations", JSON.stringify(d), (err,data)->
+		date = new Date()
+		date.setHours(date.getHours()+1)
+		d[req.body.user] = {code:guid,exp:~~(date.getTime()/1000)}
+		stillAlive = {}
+		now = ~~(new Date().getTime()/1000)
+		for own k,v of d
+			stillAlive[k] = v if v.exp > now
+		brain.set "cryptoAlerter:confirmations", JSON.stringify(stillAlive), (err,data)->
 			toSave = {confirmation:guid}
 			res.json toSave
+
+exports.reloadUser = (req,res)->
+	brain.get "cryptoAlerter:userAlerts", (err,d)->
+		d ?= '{}'
+		d = JSON.parse d
+		if d[req.body.user]?
+			user = d[req.body.user]
+			user.active = if user.active then "Unlimited" else "Limited"
+			res.json user
+		else
+			res.json {}
 
 exports.isItConfirmed = (req,res)->
 	brain.get "cryptoAlerter:confirmations", (err,d)->
 		d ?= '{}'
 		d = JSON.parse d
 		if d[req.body.user]?
-			res.json {confirmed:false}
+			res.json {}
 		else
 			brain.get "cryptoAlerter:userAlerts", (err,d)->
 				d ?= '{}'
 				d = JSON.parse d
-				res.json {confirmed:d[req.body.user]?}
+				if d[req.body.user]?
+					user = d[req.body.user]
+					user.active = if user.active then "Unlimited" else "Limited"
+					res.json user
+				else
+					res.json {}
+
+exports.saveUserAlerts = (req,res)->
+	payload = req.body.payload
+	brain.get "cryptoAlerter:userAlerts", (err,d)->
+		d ?= '{}'
+		d = JSON.parse d
+		if d[payload.username]?
+			item = d[payload.username]
+			for own k,v of payload.currencies
+				payload.currencies[k].name =  v.name
+				payload.currencies[k]['maximum-active'] = v['maximum-active'] is 'true'
+				payload.currencies[k]['maximum-value'] = ~~v['maximum-value']
+				payload.currencies[k]['minimum-active'] = v['minimum-active'] is 'true'
+				payload.currencies[k]['minimum-value'] = ~~v['minimum-value']
+				payload.currencies[k].sell = v.sell is 'true'
+				payload.currencies[k].buy = v.buy is 'true'
+				payload.currencies[k].rising = v.rising is 'true'
+				payload.currencies[k].declining = v.declining is 'true'
+			item.currencies = payload.currencies
+
+			d[payload.username] = item
+			brain.set "cryptoAlerter:userAlerts", JSON.stringify(d)
+
+	res.sendStatus 200
