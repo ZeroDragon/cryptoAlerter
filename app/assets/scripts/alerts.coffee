@@ -4,7 +4,9 @@ saveToMemory = (d)-> localStorage.bitcoinAlerterAlerts = JSON.stringify(d)
 look4Confirmation = ->
 	timer = setTimeout ->
 		clearTimeout timer
-		$.post '/bot/isItConfirmed',{user:$('#username').val()},(data)->
+		val = $('#username').val()
+		val = val.replace('@','')
+		$.post '/bot/isItConfirmed',{user:val},(data)->
 			if data.id?
 				saveToMemory data
 				showUser()
@@ -76,9 +78,12 @@ deleteAlert = (code)->
 
 saveToBot = ->
 	$.post '/bot/saveAlerts', {payload:getfromMemory()}, (data)->
-		console.log data
 
 saveValues = ->
+	$('#saveButton').text('Saved!').addClass('success')
+	setTimeout ->
+		$('#saveButton').text('Save all changes').removeClass('success')
+	,1500
 	currencies = {}
 	$('.alerts .alertInput').each ->
 		val = $(@).val()
@@ -101,8 +106,10 @@ $ ->
 	else
 		showUser()
 	$('#confirm').click ->
-		return if $('#username').val() is ''
-		$.post '/bot/askForConfirmation', {user:$('#username').val()}, (data)->
+		val = $('#username').val()
+		val = val.replace('@','')
+		return if val is ''
+		$.post '/bot/askForConfirmation', {user:val}, (data)->
 			code = $('#code').text().replace /#####/,data.confirmation
 			$('#code').text(code)
 			$('.row.login').hide()

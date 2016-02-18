@@ -80,9 +80,6 @@ saveToRedis = ()->
 	stamp = ~~(stamp / 60) * 60
 	addZ = (i)-> ('00'+i).slice(-2)
 	console.log "Saving To Redis #{d.getFullYear()}-#{addZ(d.getMonth()+1)}-#{addZ(d.getDate())}@#{addZ(d.getHours())}:#{addZ(d.getMinutes())}"
-	# last12Hours = new Date(d.getTime())
-	# last12Hours.setHours(last12Hours.getHours()-1)
-	# last12Hours = ~~(last12Hours.getTime()/1000)
 	brain.get "cryptoAlerter:storage", (err,d)->
 		throw err if err
 		data = {coins:{}}
@@ -94,12 +91,12 @@ saveToRedis = ()->
 			for own k,v of data.coins[item.code]
 				arr.push {k:~~k,v:v}
 			arr = arr[-60..]
-			# arr = arr.filter (e)-> e.k > last12Hours
 			data.coins[item.code] = {}
 			for i in arr
 				data.coins[item.code][i.k] = i.v
 		brain.set "cryptoAlerter:storage", JSON.stringify(data), (err,reply)->
 			throw err if err
+			_getTrends ->
 
 cacheRates = (cb)->
 	wait4data = false
@@ -118,13 +115,51 @@ cacheRates = (cb)->
 	if !wait4data
 		cb cacheData
 
-exports.getRates = (cb)->
+_getRates = (cb)->
 	cacheRates (data)->
 		cb data
+exports.getRates = _getRates
 
-exports.saveParsed = (toDisplay)->
-	cloned = JSON.parse(JSON.stringify(toDisplay))
-	toSave = cloned.filter (e)-> e.action isnt 'Not moving'
-	brain.set "cryptoAlerter:trend", JSON.stringify(toSave), (err,reply)->
-		throw err if err
-	
+_getTrends = (cb)->
+	_getRates (rates)-> brain.get 'cryptoAlerter:storage', (err,data)->
+		rates = JSON.parse(JSON.stringify(rates))
+		ratesData = rates.filter (e)-> e.mxn >= 0.01
+		coinsData = JSON.parse(data).coins
+		for coin,k in ratesData
+			d = []
+			for own k1,v of coinsData[coin.code]
+				d.push [~~k1,v]
+			ratesData[k].data = d
+
+		ratesData = ratesData.map (e)->
+			data = e.data.map (e)-> e[1]
+			delete e.data
+			delete e.historic
+			last = data.pop()
+			before = parseFloat((data[-2..].reduce((a,b)->a+b)/data[-2..].length).toFixed(3))
+			average = parseFloat((data.reduce((a,b)->a+b)/data.length).toFixed(3))
+			e.status = {trend:'same'}
+			e.status.trend = 'up' if last > average
+			e.status.trend = 'down' if last < average
+			e.status.movement = last isnt before
+			e.action = 'Not moving'
+			e.action = 'Let me go' if e.status.trend is 'up' and !e.status.movement
+			e.action = 'Buy me!' if e.status.trend is 'down' and !e.status.movement
+			e.action = 'Rising' if e.status.trend is 'up' and e.status.movement
+			e.action = 'Declining' if e.status.trend is 'down' and e.status.movement
+			return e
+
+		buy = ratesData.filter (e)-> e.action is 'Buy me!'
+		sell = ratesData.filter (e)-> e.action is 'Let me go'
+		still = ratesData.filter (e)-> e.action is 'Not moving'
+		rising = ratesData.filter (e)-> e.action is 'Rising'
+		declining = ratesData.filter (e)-> e.action is 'Declining'
+
+		toDisplay = [].concat buy,sell,rising,declining,still
+
+		cloned = JSON.parse(JSON.stringify(toDisplay))
+		toSave = cloned.filter (e)-> e.action isnt 'Not moving'
+		brain.set "cryptoAlerter:trend", JSON.stringify(toSave), (err,reply)->
+
+		cb toDisplay
+exports.getTrends = _getTrends

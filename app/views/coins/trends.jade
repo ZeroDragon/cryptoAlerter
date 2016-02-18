@@ -11,22 +11,16 @@ block header
 		i.fa.fa-menu-hamburger(title="Menu",onclick="$('#rmenu').css({width:'200px'})")
 block body
 	.help
-		p.
-			The last column: "Action" will tell you what is the best for that currency; this is calculated taking the average of value over the last hour, then an average over the last two minutes.
-			<br/><br/>
-			If the current value is above the hourly average and is the same as the two-minutes average, it's considered for selling.
-			<br/><br/>
-			If the current value is below the hourly average and is the same as the two-minutes average, it's considered for buying.
-			<br/><br/>
-			If the current value is different from the two-minutes average, then it's "rising" or "declining" depending if it is over or below the hourly average
+		p The last column: "Action" will tell you what is the best for that currency; this is calculated taking the average of value over the last hour, then an average over the last two minutes.
+		p If the current value is above the hourly average and is the same as the two-minutes average, it's considered for selling.
+		p If the current value is below the hourly average and is the same as the two-minutes average, it's considered for buying.
+		p If the current value is different from the two-minutes average, then it's "rising" or "declining" depending if it is over or below the hourly average
 	table(cellpadding="0",cellspacing="0")
 		tr
 			th Name
 			th Code
 			th USD
 			th MXN
-			//- th Trend
-			//- th Moving
 			th Action
 		for item in coins
 			tr
@@ -34,6 +28,4 @@ block body
 				td: div #{item.code}
 				td: div $#{addCommas(item.usd)}
 				td: div $#{addCommas(item.mxn)}
-				//- td: div #{item.status.trend}
-				//- td: div #{item.status.movement}
 				td: div #{item.action}

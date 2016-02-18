@@ -9,7 +9,7 @@ block header
 block body
 	.container
 		#needLogin.hidden
-			.notice No userdata registered on this computer, we need to link your telegram account to the bot before you can configure your alerts. <br/> Don't worry you'll only need to do this once, after that, we'll save your information on this computer.
+			.notice Login process is made by sending a confirmation code to <a href="https://telegram.me/CryptoAlerterBot" target="_blank">@CryptoAlerterBot</a>. Type your telegram username in the field and request one to proceed.
 			.row.login
 				|Username: 
 				input(type="text").username#username
@@ -38,10 +38,10 @@ block body
 						br
 						.stat.btn(onClick="reloadInfo();") Reload my information
 						//- .stat.btn Make a donation
-						.stat.btn(onClick="saveValues();") Save all changes
+						.stat.btn(onClick="saveValues();")#saveButton Save all changes
 						.stat.btn(onClick="logout();") Logout
 				.col10
-					.message.inactive.hidden Currently your account is <b>"Limited"</b>.<br/>This means that you can only receive 1 notification per hour and can only setup 1 currency at a time. <br/>If you want to become <b>"Unlimited"</b>, send <b>/unlimited</b> to <a href="https://telegram.me/CryptoAlerterBot" target="_blank">@CryptoAlerterBot</a> to get a deposit address.
+					.message.inactive.hidden Currently your account is <b>"Limited"</b>.<br/>This means that you can only receive notifications for the first currency in list. <br/>If you want to become <b>"Unlimited"</b>, send <b>/unlimited</b> to <a href="https://telegram.me/CryptoAlerterBot" target="_blank">@CryptoAlerterBot</a> to get a deposit address.
 					select#coinSelector
 						for coin in coins
 							option(value="#{coin.code}|#{coin.name}") #{coin.name}
@@ -55,22 +55,22 @@ block body
 							.row
 								input(type="hidden",data-coin="CODE",data-name="name",value="NAME").alertInput
 								input(type="checkbox",data-coin="CODE",data-name="maximum-active").alertInput
-								|Maximum Value
+								.text Maximum Value
 								input(type="text",data-coin="CODE",data-name="maximum-value").alertInput
 							.row
 								input(type="checkbox",data-coin="CODE",data-name="minimum-active").alertInput
-								|Minimum Value
+								.text Minimum Value
 								input(type="text",data-coin="CODE",data-name="minimum-value").alertInput
 							.row
 								input(type="checkbox",data-coin="CODE",data-name="sell").alertInput
-								|Sell alert
+								.text Sell alert
 							.row
 								input(type="checkbox",data-coin="CODE",data-name="buy").alertInput
-								|Buy alert
+								.text Buy alert
 							.row
 								input(type="checkbox",data-coin="CODE",data-name="rising").alertInput
-								|Rising alert
+								.text Rising alert
 							.row
 								input(type="checkbox",data-coin="CODE",data-name="declining").alertInput
-								|Declining alert
+								.text Declining alert
 							.delete(onClick="deleteAlert('CODE')") x

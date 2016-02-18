@@ -12,3 +12,5 @@ app.post '/bot/askForConfirmation', alerts.askForConfirmation
 app.post '/bot/isItConfirmed', alerts.isItConfirmed
 app.post '/bot/reloadUser', alerts.reloadUser
 app.post '/bot/saveAlerts', alerts.saveUserAlerts
+
+app.get '/bot/triggerAlerts', alerts.triggerAlerts

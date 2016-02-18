@@ -83,3 +83,7 @@ exports.saveUserAlerts = (req,res)->
 			brain.set "cryptoAlerter:userAlerts", JSON.stringify(d)
 
 	res.sendStatus 200
+
+exports.triggerAlerts = (req,res)->
+	botModel.triggerAlerts ->
+	res.sendStatus 200
