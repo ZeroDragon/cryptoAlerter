@@ -7,6 +7,7 @@ app.get '/status/:currency.json', status.value
 app.get '/status/:currency', status.valueHTML
 app.get '/trends', status.trends
 app.get '/alerts', alerts.main
+app.get '/unlimited', alerts.unlimited
 
 app.post '/bot/askForConfirmation', alerts.askForConfirmation
 app.post '/bot/isItConfirmed', alerts.isItConfirmed

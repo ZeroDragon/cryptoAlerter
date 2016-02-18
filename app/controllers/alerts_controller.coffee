@@ -87,3 +87,7 @@ exports.saveUserAlerts = (req,res)->
 exports.triggerAlerts = (req,res)->
 	botModel.triggerAlerts req.params.type, ->
 	res.sendStatus 200
+
+exports.unlimited = (req,res)->
+	botModel.gotPayment req.query, ->
+	res.send "ok"

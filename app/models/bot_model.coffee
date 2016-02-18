@@ -18,7 +18,38 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 		"""
 		bot.sendMessage msg.from.id, message, {parse_mode:"Markdown"}
 
-# bot.onText /\/activate (.*) untill (.*)$/, (msg,match)->
+bot.onText /\/activate (.*) as (.*) untill (.*)$/, (msg,match)->
+	return if msg.from.id isnt config.telegramAdmin
+	brain.get "cryptoAlerter:userAlerts", (err,d)->
+		d ?= '{}'
+		d = JSON.parse d
+		date = match[3].split('-').map (e)-> ~~e
+		untill = new Date(date[0],date[1]-1,date[2],0,0,0)
+		if d[match[2]]?
+			temp = d[match[2]]
+			temp.active = true
+			temp.expiration = ~~(untill.getTime()/1000)
+		else
+			temp = {
+				active : true,
+				expiration : ~~(untill.getTime()/1000)
+				username : [match[2]]
+				id : match[1]
+				currencies : {}
+			}
+		d[match[2]] = temp
+		brain.set "cryptoAlerter:userAlerts", JSON.stringify(d)
+		bot.sendMessage config.telegramAdmin, "#{match[2]} activated untill #{match[3]}"
+		bot.sendMessage match[1], "#{match[2]}, your account has been activated untill #{match[3]}"
+
+bot.onText /\/unlimited$/, (msg)->
+	callback = "http://cryptoalerter.tk/unlimited?username=#{msg.from.username}&userid=#{msg.from.id}"
+	url = "https://api.blockchain.info/v2/receive?xpub=#{config.blockchain.xPub}&key=#{config.blockchain.API}&callback=#{encodeURIComponent(callback)}"
+	console.log url
+	request.get url, (err,res,body)->
+		body = JSON.parse body
+		console.log body
+		bot.sendMessage msg.from.id, "Ok, now just send 0.005 BTC to #{body.address}"
 
 confirmed = (username,userid)->
 	_deleteConfirmation = ->
@@ -55,6 +86,14 @@ bot.onText /\/confirm (.*)$/, (msg,match)->
 			confirmed(msg.from.username,msg.from.id)
 		else
 			bot.sendMessage msg.from.id, "Code not recognized"
+
+exports.gotPayment = (query,cb)->
+	message = ["Got Donation"]
+	for own k,v of query
+		message.push "*#{k}:* #{v}"
+	message = message.join('\n')
+	bot.sendMessage config.telegramAdmin, message, {parse_mode:"Markdown"}
+	cb true
 
 exports.triggerAlerts = (type,cb)->
 	sendMessages = (alertsGrouped)->

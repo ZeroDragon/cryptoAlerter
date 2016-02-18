@@ -39,7 +39,7 @@ showUser = ->
 	if fromMem.active isnt 'Limited'
 		d = new Date(fromMem.expiration*1000)
 		expDate = "#{addZ(d.getMonth()+1)}/#{addZ(d.getDate())}/#{d.getFullYear()}"
-		t = t.replace(/untill/,expDate)
+		t = t.replace(/expired/,expDate)
 
 	$('.alerts').html ''
 	alerts = []

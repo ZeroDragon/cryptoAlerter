@@ -34,14 +34,21 @@ block body
 							.expiration
 								|Expiration date:
 								br
-								b untill
+								b expired
 						br
 						.stat.btn(onClick="reloadInfo();") Reload my information
 						//- .stat.btn Make a donation
 						.stat.btn(onClick="saveValues();")#saveButton Save all changes
 						.stat.btn(onClick="logout();") Logout
 				.col10
-					.message.inactive.hidden Currently your account is <b>"Limited"</b>.<br/>This means that you can only receive notifications for the first currency in list. <br/>If you want to become <b>"Unlimited"</b>, send <b>/unlimited</b> to <a href="https://telegram.me/CryptoAlerterBot" target="_blank">@CryptoAlerterBot</a> to get a deposit address.
+					.message.inactive.hidden
+						|Currently your account is <b>"Limited"</b>.
+						br
+						|This means that you can only receive one notification every 30 minutes (minute 0 and 30), also you will get notifications only for the first currency in list.
+						br
+						|<b>Unlimited</b> users receive notifications for all their desired currencies on a minute basis (if criteria is meet)
+						br
+						|If you want to become <b>"Unlimited"</b>, send <b>/unlimited</b> to <a href="https://telegram.me/CryptoAlerterBot" target="_blank">@CryptoAlerterBot</a> to get a deposit address.
 					select#coinSelector
 						for coin in coins
 							option(value="#{coin.code}|#{coin.name}") #{coin.name}
