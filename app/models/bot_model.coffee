@@ -25,8 +25,8 @@ bot.onText /\/start$/, (msg)->
 
 bot.onText /\/rate$/, (msg)->
 	keyboard = [
-		['/rate BTC','/rate NBT']
-		['/rate ETH','/rate MXN']
+		['/rate BTC','/rate ETH']
+		['/rate DOGE','/rate MXN']
 	]
 	opts = {
 		reply_markup: JSON.stringify({
