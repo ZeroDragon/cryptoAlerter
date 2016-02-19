@@ -5,6 +5,10 @@ else
 	bot = new TelegramBot(config.telegramToken, {polling: true})
 async = require 'async'
 crypto = CT_LoadModel 'crypto'
+fs = require 'fs'
+createGuid = ->
+	s4 = -> Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
+	return s4() + s4() + '-' + s4() + '-' + s4() + '-' +s4() + '-' + s4() + s4() + s4()
 
 bot.onText /\/start$/, (msg)->
 	message = """
@@ -45,6 +49,16 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 			*Action:* _#{data.action}_
 		"""
 		bot.sendMessage msg.from.id, message, {parse_mode:"Markdown"}
+		filename = "#{process.cwd()}/snapshots/#{createGuid()}.png"
+		request("#{ownUrl}/chart/#{data.code}")
+			.pipe(fs.createWriteStream(filename))
+			.on 'close', ->
+				bot.sendPhoto msg.from.id, filename
+				setTimeout ->
+					#Wait 1 second and delete image
+					fs.unlink filename, (err)->
+				,1000
+
 
 bot.onText /\/activate (.*) as (.*) untill (.*)$/, (msg,match)->
 	return if msg.from.id isnt config.telegramAdmin

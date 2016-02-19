@@ -8,6 +8,7 @@ rClient.on 'connect', ->
 		request : require 'request'
 		brain : rClient
 		botModel : CT_LoadModel 'bot'
+		ownUrl : if process.env.DEV? then "http://localhost:1339" else "http://cryptoalerter.tk"
 		addCommas : (x)->
 			parts = x.toString().split(".")
 			parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")
