@@ -1,3 +1,9 @@
+if standAlone
+	link(rel="stylesheet",href="/styles/layout.css")
+	link(rel="stylesheet" href="/styles/coinData.css")
+	script(src="/scripts/jquery.js")
+	script(src="https://code.highcharts.com/highcharts.js")
+
 script.
 	var coin#{coin.code} = !{JSON.stringify(coin)};
 
@@ -24,9 +30,11 @@ table(border="0",cellpadding="4",cellspacing="0").table
 	tr
 		td(colspan="7")
 			div(id="chart#{coin.code}")
-
-.botones
-	.cerrar(onclick="delItem('#{coin.code}');") x
+if !standAlone
+	.botones
+		.cerrar(onclick="delItem('#{coin.code}');") x
+else
+	div(style="text-align:right;") CryptoAlerter.tk&nbsp;
 
 script.
 	Highcharts.setOptions({

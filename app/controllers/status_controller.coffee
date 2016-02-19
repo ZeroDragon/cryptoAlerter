@@ -28,6 +28,7 @@ exports.valueHTML = (req,res)->
 				res.render CT_Static + '/coins/coinData.jade',{
 					coin : coin,
 					title : 'Crypto Alerter'
+					standAlone : req.params.standAlone ?= false
 				}
 		else
 			res.sendStatus 404

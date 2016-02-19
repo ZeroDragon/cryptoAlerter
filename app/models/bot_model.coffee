@@ -6,6 +6,34 @@ else
 async = require 'async'
 crypto = CT_LoadModel 'crypto'
 
+bot.onText /\/start$/, (msg)->
+	message = """
+		Welcome, @#{msg.from.username}
+		This is an alert bot designed to send you messages about crypto currencies.
+		All the configuration is done [HERE](http://cryptoalerter.tk/alerts).
+		When the bot is configured it will send you your desired alerts.
+		Also, you can ask for some common rates using /rate
+		Or if you know the currency code, you can send /rate CODE
+			Ej: /rate BTC
+			To get the current Bitcoin rate
+	"""
+	bot.sendMessage msg.from.id, message, {parse_mode : "Markdown"}
+
+bot.onText /\/rate$/, (msg)->
+	keyboard = [
+		['/rate BTC','/rate NBT']
+		['/rate ETH','/rate MXN']
+	]
+	opts = {
+		reply_markup: JSON.stringify({
+			one_time_keyboard : true
+			# resize_keyboard : true
+			keyboard: keyboard
+			selective : true
+		})
+	}
+	bot.sendMessage(msg.from.id, "What rate you want @#{msg.from.username}?", opts)
+
 bot.onText /\/rate (.*)$/, (msg,match)->
 	brain.get "cryptoAlerter:trend", (err,d)->
 		d ?= '{}'

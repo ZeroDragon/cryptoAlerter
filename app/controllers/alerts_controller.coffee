@@ -67,6 +67,7 @@ exports.saveUserAlerts = (req,res)->
 		d = JSON.parse d
 		if d[payload.username]?
 			item = d[payload.username]
+			payload.currencies ?= {}
 			for own k,v of payload.currencies
 				payload.currencies[k].name =  v.name
 				payload.currencies[k]['maximum-active'] = v['maximum-active'] is 'true'
