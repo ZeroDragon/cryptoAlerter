@@ -1,5 +1,5 @@
 TelegramBot = require('node-telegram-bot-api')
-if process.env.DEV?
+if process.env.NOBOT?
 	bot ={ onText : ()->}
 else
 	bot = new TelegramBot(config.telegramToken, {polling: true})

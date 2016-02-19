@@ -37,7 +37,11 @@ exports.valueHTML = (req,res)->
 exports.valueImage = (req,res)->
 	phantom.create (ph)->
 		ph.createPage (page)->
-			page.open "http://localhost:1339/status/#{req.params.currency}/true",(status)->
+			if process.env.DEV?
+				ownUrl = "http://localhost:1339"
+			else
+				ownUrl = "http://cryptoalerter.tk"
+			page.open "#{ownUrl}/status/#{req.params.currency}/true",(status)->
 				page.set('viewportSize', {width:600,height:200})
 				page.renderBase64('png',(data)->
 					res.writeHead(200, { 'Cache': 'no-cache','Content-Type': 'image/png' })
