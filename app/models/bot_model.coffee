@@ -27,7 +27,7 @@ bot.onText /\/rate$/, (msg)->
 	opts = {
 		reply_markup: JSON.stringify({
 			one_time_keyboard : true
-			# resize_keyboard : true
+			resize_keyboard : true
 			keyboard: keyboard
 			selective : true
 		})
