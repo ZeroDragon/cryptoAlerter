@@ -10,7 +10,7 @@ createGuid = ->
 	s4 = -> Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
 	return s4() + s4() + '-' + s4() + '-' + s4() + '-' +s4() + '-' + s4() + s4() + s4()
 
-bot.onText /\/start$/, (msg)->
+bot.onText /\/start$|\/start@CryptoAlerterBot$/, (msg)->
 	message = """
 		Welcome, @#{msg.from.username}
 		This is an alert bot designed to send you messages about crypto currencies.
@@ -21,9 +21,9 @@ bot.onText /\/start$/, (msg)->
 			Ej: /rate BTC
 			To get the current Bitcoin rate
 	"""
-	bot.sendMessage msg.from.id, message, {parse_mode : "Markdown"}
+	bot.sendMessage msg.chat.id, message, {parse_mode : "Markdown"}
 
-bot.onText /\/rate$/, (msg)->
+bot.onText /\/rate$|\/rate@CryptoAlerterBot/, (msg)->
 	keyboard = [
 		['/rate BTC','/rate ETH']
 		['/rate DOGE','/rate MXN']
@@ -36,7 +36,7 @@ bot.onText /\/rate$/, (msg)->
 			selective : true
 		})
 	}
-	bot.sendMessage(msg.from.id, "What rate you want @#{msg.from.username}?", opts)
+	bot.sendMessage(msg.chat.id, "What rate you want @#{msg.from.username}?", opts)
 
 bot.onText /\/rate (.*)$/, (msg,match)->
 	brain.get "cryptoAlerter:trend", (err,d)->
@@ -48,12 +48,12 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 			$#{addCommas(data.mxn)} *MXN*
 			*Action:* _#{data.action}_
 		"""
-		bot.sendMessage msg.from.id, message, {parse_mode:"Markdown"}
+		bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
 		filename = "#{process.cwd()}/snapshots/#{createGuid()}.png"
 		request("#{ownUrl}/chart/#{data.code}")
 			.pipe(fs.createWriteStream(filename))
 			.on 'close', ->
-				bot.sendPhoto msg.from.id, filename
+				bot.sendPhoto msg.chat.id, filename
 				setTimeout ->
 					#Wait 1 second and delete image
 					fs.unlink filename, (err)->
