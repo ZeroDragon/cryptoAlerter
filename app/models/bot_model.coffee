@@ -51,7 +51,7 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 		"""
 		bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
 		filename = "#{process.cwd()}/snapshots/#{createGuid()}.png"
-		request("http://kokoro.socialdecode.com:8001/#{ownUrl}/status/#{data.code}/true")
+		request("http://cryptoalerter.tk:8079/#{ownUrl}/status/#{data.code}/true")
 			.pipe(fs.createWriteStream(filename))
 			.on 'close', ->
 				bot.sendPhoto msg.chat.id, filename
