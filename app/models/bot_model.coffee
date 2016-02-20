@@ -44,20 +44,21 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 		data = JSON.parse(d).filter((e)-> e.code is match[1].toUpperCase())[0]
 		message = """
 			*#{data.name}* _#{data.code}_
+			[Chart] (#{ownUrl}/status/#{data.code}/true)
 			$#{addCommas(data.usd)} *USD*
 			$#{addCommas(data.mxn)} *MXN*
 			*Action:* _#{data.action}_
 		"""
 		bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
-		filename = "#{process.cwd()}/snapshots/#{createGuid()}.png"
-		request("#{ownUrl}/chart/#{data.code}")
-			.pipe(fs.createWriteStream(filename))
-			.on 'close', ->
-				bot.sendPhoto msg.chat.id, filename
-				setTimeout ->
-					#Wait 1 second and delete image
-					fs.unlink filename, (err)->
-				,1000
+		# filename = "#{process.cwd()}/snapshots/#{createGuid()}.png"
+		# request("#{ownUrl}/chart/#{data.code}")
+		# 	.pipe(fs.createWriteStream(filename))
+		# 	.on 'close', ->
+		# 		bot.sendPhoto msg.chat.id, filename
+		# 		setTimeout ->
+		# 			#Wait 1 second and delete image
+		# 			fs.unlink filename, (err)->
+		# 		,1000
 
 
 bot.onText /\/activate (.*) as (.*) untill (.*)$/, (msg,match)->
