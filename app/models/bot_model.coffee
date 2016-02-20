@@ -50,15 +50,15 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 			*Action:* _#{data.action}_
 		"""
 		bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
-		filename = "#{process.cwd()}/snapshots/#{createGuid()}.png"
-		request("http://cryptoalerter.tk:8079/#{ownUrl}/status/#{data.code}/true")
-			.pipe(fs.createWriteStream(filename))
-			.on 'close', ->
-				bot.sendPhoto msg.chat.id, filename
-				setTimeout ->
-					#Wait 1 second and delete image
-					fs.unlink filename, (err)->
-				,1000
+		# filename = "#{process.cwd()}/snapshots/#{createGuid()}.png"
+		# request("http://cryptoalerter.tk:8079/#{ownUrl}/status/#{data.code}/true")
+		# 	.pipe(fs.createWriteStream(filename))
+		# 	.on 'close', ->
+		# 		bot.sendPhoto msg.chat.id, filename
+		# 		setTimeout ->
+		# 			#Wait 1 second and delete image
+		# 			fs.unlink filename, (err)->
+		# 		,1000
 
 
 bot.onText /\/activate (.*) as (.*) untill (.*)$/, (msg,match)->
