@@ -35,25 +35,15 @@ exports.valueHTML = (req,res)->
 			res.sendStatus 404
 
 exports.valueImage = (req,res)->
-	phantom.create().then (ph)->
-		ph.createPage().then (page) ->
-			page.open("#{ownUrl}/status/#{req.params.currency}/true").then () ->
-				page.renderBase64('PNG').then (content) ->
+	phantom.create (ph)->
+		ph.createPage (page)->
+			page.open "#{ownUrl}/status/#{req.params.currency}/true",(status)->
+				page.set('viewportSize', {width:600,height:200})
+				page.renderBase64('png',(data)->
 					res.writeHead(200, { 'Cache': 'no-cache','Content-Type': 'image/png' })
-					res.end content,'base64'
-					page.close()
+					res.end data,'base64'
 					ph.exit()
-
-
-	# phantom.create (ph)->
-	# 	ph.createPage (page)->
-	# 		page.open "#{ownUrl}/status/#{req.params.currency}/true",(status)->
-	# 			page.set('viewportSize', {width:600,height:200})
-	# 			page.renderBase64('png',(data)->
-	# 				res.writeHead(200, { 'Cache': 'no-cache','Content-Type': 'image/png' })
-	# 				res.end data,'base64'
-	# 				ph.exit()
-	# 			)
+				)
 
 exports.trends = (req,res)->
 	crypto.getTrends (toDisplay)->
