@@ -69,10 +69,13 @@ _elData = (cb)->
 			money.code = 'MNY'
 			rows.push money
 
+		btc = rows.filter((e)->e.code is 'BTC')[0]
+
 		rows = rows.map (e)->
 			h = e.historic
 			delete e.historic
 			e.mxn = parseFloat((e.usd * (1 / data.usd[0].usd)).toFixed(2))
+			e.btc = parseFloat((e.usd * (1 / btc.usd)).toFixed(2))
 			e.historic = h
 			return e
 

@@ -47,6 +47,7 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 				[Chart](#{ownUrl}/status/#{data.code}/true)
 				$#{addCommas(data.usd)} *USD*
 				$#{addCommas(data.mxn)} *MXN*
+				$#{addCommas(data.btc)} *BTC*
 				*Action:* _#{data.action}_
 			"""
 		bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}

@@ -21,6 +21,7 @@ block body
 			th Code
 			th USD
 			th MXN
+			th BTC
 			th Action
 		for item in coins
 			tr
@@ -28,4 +29,5 @@ block body
 				td: div #{item.code}
 				td: div $#{addCommas(item.usd)}
 				td: div $#{addCommas(item.mxn)}
+				td: div $#{addCommas(item.btc)}
 				td: div #{item.action}

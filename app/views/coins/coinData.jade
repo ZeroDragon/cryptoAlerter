@@ -13,6 +13,7 @@ table(border="0",cellpadding="4",cellspacing="0").table
 		th Code
 		th USD
 		th MXN
+		th BTC
 		th Hour
 		th Day
 		th Week
@@ -21,6 +22,7 @@ table(border="0",cellpadding="4",cellspacing="0").table
 		td #{coin.code}
 		td $#{addCommas(coin.usd)}
 		td $#{addCommas(coin.mxn)}
+		td $#{addCommas(coin.btc)}
 		- upOrDown = coin.historic.h < 0? 'red' : ''
 		td(class="#{upOrDown}") #{addCommas(coin.historic.h)}%
 		- upOrDown = coin.historic.d < 0? 'red' : ''
@@ -28,7 +30,7 @@ table(border="0",cellpadding="4",cellspacing="0").table
 		- upOrDown = coin.historic.w < 0? 'red' : ''
 		td(class="#{upOrDown}") #{addCommas(coin.historic.w)}%
 	tr
-		td(colspan="7")
+		td(colspan="8")
 			div(id="chart#{coin.code}")
 if !standAlone
 	.botones
