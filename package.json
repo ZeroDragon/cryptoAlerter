@@ -8,6 +8,10 @@
     "start": "coffee app.coffee"
   },
   "author": "ZeroDragon <npm@zerothedragon.com>",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:ZeroDragon/cryptoAlerter.git"
+  },
   "license": "MIT",
   "dependencies": {
     "async": "^1.5.2",
@@ -15,7 +19,7 @@
     "cheerio": "^0.20.0",
     "node-telegram-bot-api": "^0.20.1",
     "phantom": "^0.8.4",
-    "redis": "^2.4.2",
+    "mongodb": "1.4.31",
     "request": "^2.69.0"
   }
 }

@@ -1,7 +1,4 @@
 crypto = CT_LoadModel 'crypto'
-createguid = ->
-	s4 = -> Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
-	return s4() + s4() + '-' + s4() + '-' + s4() + '-' +s4() + '-' + s4() + s4() + s4()
 exports.main = (req,res)->
 	crypto.getRates (rates)->
 		coins = []
@@ -17,56 +14,44 @@ exports.main = (req,res)->
 		}
 
 exports.askForConfirmation = (req,res)->
-	brain.get "cryptoAlerter:confirmations", (err,d)->
-		d ?= '{}'
-		d = JSON.parse d
-		guid = createguid().split('-').map((e)-> e[0]).join('')
-		date = new Date()
-		date.setHours(date.getHours()+1)
-		d[req.body.user] = {code:guid,exp:~~(date.getTime()/1000)}
-		stillAlive = {}
-		now = ~~(new Date().getTime()/1000)
-		for own k,v of d
-			stillAlive[k] = v if v.exp > now
-		brain.set "cryptoAlerter:confirmations", JSON.stringify(stillAlive), (err,data)->
-			toSave = {confirmation:guid}
+	code = createguid().split('-').map((e)-> e[0]).join('')
+	date = new Date()
+	date.setHours(date.getHours()+1)
+	d = {username:req.body.user,code:code,exp:~~(date.getTime()/1000)}
+	now = ~~(new Date().getTime()/1000)
+	#Overwrite confirmation
+	brain.del "confirmations", {username:req.body.user}, (err,resp)->
+		#Save confirmation
+		brain.set "confirmations", d, (err,data)->
+			toSave = {confirmation:code}
 			res.json toSave
+			#Garbage collect
+			brain.del 'confirmations', {exp:{$lt:now}}, (err,resp)->
 
 exports.reloadUser = (req,res)->
-	brain.get "cryptoAlerter:userAlerts", (err,d)->
-		d ?= '{}'
-		d = JSON.parse d
-		if d[req.body.user]?
-			user = d[req.body.user]
-			user.active = if user.active then "Unlimited" else "Limited"
-			res.json user
+	brain.get "userAlerts", {username:req.body.user}, (err,d)->
+		if d?
+			d.active = if d.active then "Unlimited" else "Limited"
+			res.json d
 		else
 			res.json {}
 
 exports.isItConfirmed = (req,res)->
-	brain.get "cryptoAlerter:confirmations", (err,d)->
-		d ?= '{}'
-		d = JSON.parse d
-		if d[req.body.user]?
+	brain.get "confirmations", {username:req.body.user}, (err,d)->
+		if d?
 			res.json {}
 		else
-			brain.get "cryptoAlerter:userAlerts", (err,d)->
-				d ?= '{}'
-				d = JSON.parse d
-				if d[req.body.user]?
-					user = d[req.body.user]
-					user.active = if user.active then "Unlimited" else "Limited"
-					res.json user
+			brain.get "userAlerts", {username:req.body.user}, (err,d)->
+				if d?
+					d.active = if d.active then "Unlimited" else "Limited"
+					res.json d
 				else
 					res.json {}
 
 exports.saveUserAlerts = (req,res)->
 	payload = req.body.payload
-	brain.get "cryptoAlerter:userAlerts", (err,d)->
-		d ?= '{}'
-		d = JSON.parse d
-		if d[payload.username]?
-			item = d[payload.username]
+	brain.get "userAlerts", {username:payload.username}, (err,item)->
+		if item?
 			payload.currencies ?= {}
 			for own k,v of payload.currencies
 				payload.currencies[k].name =  v.name
@@ -79,10 +64,7 @@ exports.saveUserAlerts = (req,res)->
 				payload.currencies[k].rising = v.rising is 'true'
 				payload.currencies[k].declining = v.declining is 'true'
 			item.currencies = payload.currencies
-
-			d[payload.username] = item
-			brain.set "cryptoAlerter:userAlerts", JSON.stringify(d)
-
+			brain.set "userAlerts", item, ->
 	res.sendStatus 200
 
 exports.triggerAlerts = (req,res)->
@@ -90,5 +72,7 @@ exports.triggerAlerts = (req,res)->
 	res.sendStatus 200
 
 exports.unlimited = (req,res)->
-	botModel.gotPayment req.query, ->
-	res.send '*ok*'
+	if req.query.confirmations is 0 or req.query.confirmations is 3
+		botModel.gotPayment req.query, ->
+	if req.query.confirmations is 3
+		res.send '*ok*'

@@ -63,6 +63,12 @@ _elData = (cb)->
 		rows = data.crypto
 		rows = rows.concat data.usd
 
+		money = rows.filter((e)->e.code is '$$$')[0]
+		if money?
+			rows = rows.filter (e)-> e.code isnt '$$$'
+			money.code = 'MNY'
+			rows.push money
+
 		rows = rows.map (e)->
 			h = e.historic
 			delete e.historic
@@ -74,16 +80,15 @@ _elData = (cb)->
 		cb rows
 	)
 
-saveToRedis = ()->
+saveToDB = ()->
 	d = new Date()
 	stamp = ~~(d.getTime()/1000)
 	stamp = ~~(stamp / 60) * 60
 	addZ = (i)-> ('00'+i).slice(-2)
-	console.log "Saving To Redis #{d.getFullYear()}-#{addZ(d.getMonth()+1)}-#{addZ(d.getDate())}@#{addZ(d.getHours())}:#{addZ(d.getMinutes())}"
-	brain.get "cryptoAlerter:storage", (err,d)->
+	console.log "Saving To Database #{d.getFullYear()}-#{addZ(d.getMonth()+1)}-#{addZ(d.getDate())}@#{addZ(d.getHours())}:#{addZ(d.getMinutes())}"
+	brain.get "storage", {}, (err,data)->
 		throw err if err
-		data = {coins:{}}
-		data = JSON.parse(d) if d
+		data ?= {coins:{}}
 		for item in cacheData
 			data.coins[item.code] ?= {}
 			data.coins[item.code][stamp] = item.usd
@@ -94,7 +99,7 @@ saveToRedis = ()->
 			data.coins[item.code] = {}
 			for i in arr
 				data.coins[item.code][i.k] = i.v
-		brain.set "cryptoAlerter:storage", JSON.stringify(data), (err,reply)->
+		brain.set "storage", data, (err,reply)->
 			throw err if err
 			_getTrends ->
 
@@ -110,7 +115,7 @@ cacheRates = (cb)->
 				working = false
 				expiration = new Date().getTime() + (60*1000)
 				cacheData = rows
-				saveToRedis()
+				saveToDB()
 				cb(cacheData) if wait4data
 	if !wait4data
 		cb cacheData
@@ -121,10 +126,10 @@ _getRates = (cb)->
 exports.getRates = _getRates
 
 _getTrends = (cb)->
-	_getRates (rates)-> brain.get 'cryptoAlerter:storage', (err,data)->
+	_getRates (rates)-> brain.get "storage", {}, (err,data)->
 		rates = JSON.parse(JSON.stringify(rates))
 		ratesData = rates.filter (e)-> e.mxn >= 0.01
-		coinsData = JSON.parse(data).coins
+		coinsData = data.coins
 		for coin,k in ratesData
 			d = []
 			for own k1,v of coinsData[coin.code]
@@ -157,9 +162,11 @@ _getTrends = (cb)->
 
 		toDisplay = [].concat buy,sell,rising,declining,still
 
-		cloned = JSON.parse(JSON.stringify(toDisplay))
-		toSave = cloned.filter (e)-> e.action isnt 'Not moving'
-		brain.set "cryptoAlerter:trend", JSON.stringify(toSave), (err,reply)->
+		cloned = {data:JSON.parse(JSON.stringify(toDisplay))}
+		brain.get "trend", {}, (err,trend)->
+			if trend?
+				cloned._id = trend._id
+			brain.set "trend", cloned, (err,reply)->
 
 		cb toDisplay
 exports.getTrends = _getTrends

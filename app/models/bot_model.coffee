@@ -6,9 +6,6 @@ else
 async = require 'async'
 crypto = CT_LoadModel 'crypto'
 fs = require 'fs'
-createGuid = ->
-	s4 = -> Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
-	return s4() + s4() + '-' + s4() + '-' + s4() + '-' +s4() + '-' + s4() + s4() + s4()
 
 bot.onText /\/start$|\/start@CryptoAlerterBot$/, (msg)->
 	message = """
@@ -39,17 +36,21 @@ bot.onText /\/rate$|\/rate@CryptoAlerterBot/, (msg)->
 	bot.sendMessage(msg.chat.id, "What rate you want @#{msg.from.username}?", opts)
 
 bot.onText /\/rate (.*)$/, (msg,match)->
-	brain.get "cryptoAlerter:trend", (err,d)->
-		d ?= '{}'
-		data = JSON.parse(d).filter((e)-> e.code is match[1].toUpperCase())[0]
-		message = """
-			*#{data.name}* _#{data.code}_
-			[Chart](#{ownUrl}/status/#{data.code}/true)
-			$#{addCommas(data.usd)} *USD*
-			$#{addCommas(data.mxn)} *MXN*
-			*Action:* _#{data.action}_
-		"""
+	brain.get "trend", {}, (err,d)->
+		d ?= {}
+		data = d.data.filter((e)-> e.code is match[1].toUpperCase())[0]
+		if !data?
+			message = "Not a valid rate code"
+		else
+			message = """
+				*#{data.name}* _#{data.code}_
+				[Chart](#{ownUrl}/status/#{data.code}/true)
+				$#{addCommas(data.usd)} *USD*
+				$#{addCommas(data.mxn)} *MXN*
+				*Action:* _#{data.action}_
+			"""
 		bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
+
 		# filename = "#{process.cwd()}/snapshots/#{createGuid()}.png"
 		# request("http://cryptoalerter.tk:8079/#{ownUrl}/status/#{data.code}/true")
 		# 	.pipe(fs.createWriteStream(filename))
@@ -61,29 +62,19 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 		# 		,1000
 
 
-bot.onText /\/activate (.*) as (.*) untill (.*)$/, (msg,match)->
+bot.onText /\/activate (.*) untill (.*)$/, (msg,match)->
 	return if msg.from.id isnt config.telegramAdmin
-	brain.get "cryptoAlerter:userAlerts", (err,d)->
-		d ?= '{}'
-		d = JSON.parse d
-		date = match[3].split('-').map (e)-> ~~e
-		untill = new Date(date[0],date[1]-1,date[2],0,0,0)
-		if d[match[2]]?
-			temp = d[match[2]]
-			temp.active = true
-			temp.expiration = ~~(untill.getTime()/1000)
+	brain.get "userAlerts", {username:match[1]}, (err,d)->
+		if d?
+			date = match[2].split('-').map (e)-> ~~e
+			untill = new Date(date[0],date[1]-1,date[2],0,0,0)
+			d.active = true
+			d.expiration = ~~(untill.getTime()/1000)
+			brain.set "userAlerts", d
+			bot.sendMessage config.telegramAdmin, "#{match[1]} activated untill #{match[2]}"
+			bot.sendMessage d.id, "#{match[1]}, your account has been activated untill #{match[2]}"
 		else
-			temp = {
-				active : true,
-				expiration : ~~(untill.getTime()/1000)
-				username : [match[2]]
-				id : match[1]
-				currencies : {}
-			}
-		d[match[2]] = temp
-		brain.set "cryptoAlerter:userAlerts", JSON.stringify(d)
-		bot.sendMessage config.telegramAdmin, "#{match[2]} activated untill #{match[3]}"
-		bot.sendMessage match[1], "#{match[2]}, your account has been activated untill #{match[3]}"
+			bot.sendMessage config.telegramAdmin, "#{match[1]} user not found"
 
 bot.onText /\/unlimited$/, (msg)->
 	callback = "http://cryptoalerter.tk/unlimited?username=#{msg.from.username}&userid=#{msg.from.id}"
@@ -96,42 +87,34 @@ bot.onText /\/unlimited$/, (msg)->
 
 confirmed = (username,userid)->
 	_deleteConfirmation = ->
-		brain.get "cryptoAlerter:confirmations", (err,d)->
-			d ?= '{}'
-			d = JSON.parse d
-			delete d[username]
-			stillAlive = {}
-			now = ~~(new Date().getTime()/1000)
-			for own k,v of d
-				stillAlive[k] = v if v.exp > now
-			brain.set "cryptoAlerter:confirmations", JSON.stringify(stillAlive)
+		now = ~~(new Date().getTime()/1000)
+		brain.del "confirmations", {$or:[{username:username},{exp:{$lt:now}}]}, ->
 	_setUser = ->
-		brain.get "cryptoAlerter:userAlerts", (err,d)->
-			d ?= '{}'
-			d = JSON.parse d
-			d[username] ?= {
-				active : false
-				username : username
-				id : userid
-				currencies : {}
-			}
-			brain.set "cryptoAlerter:userAlerts", JSON.stringify(d)
+		brain.get "userAlerts", {username:username}, (err,d)->
+			if !d?
+				d = {
+					active : false
+					username : username
+					id : userid
+					currencies : {}
+				}
+				brain.set "userAlerts", d, ->
 	_deleteConfirmation()
 	_setUser()
 
 bot.onText /\/confirm (.*)$/, (msg,match)->
 	code = match[1]
-	brain.get "cryptoAlerter:confirmations", (err,d)->
-		d ?= '{}'
-		d = JSON.parse d
-		if d[msg.from.username]? and d[msg.from.username].code is code
+	brain.get "confirmations", {username:msg.from.username}, (err,d)->
+		d ?= {}
+		if d.code is code
 			bot.sendMessage msg.from.id, "Authorized!"
 			confirmed(msg.from.username,msg.from.id)
 		else
 			bot.sendMessage msg.from.id, "Code not recognized"
 
 exports.gotPayment = (query,cb)->
-	message = ["Got Donation"]
+	message = ["Got payment"]
+	query.value = query.value / 100000000
 	for own k,v of query
 		message.push "*#{k}:* #{v}"
 	message = message.join('\n')
@@ -164,17 +147,16 @@ exports.triggerAlerts = (type,cb)->
 
 	async.parallel(
 		{
-			userAlerts : (cb)-> brain.get "cryptoAlerter:userAlerts", (err,d)->
-				d ?= '{}'
-				d = JSON.parse d
+			userAlerts : (cb)-> brain.get "userAlerts", {},(err,alerts)->
+				alerts = [alerts] if !Array.isArray(alerts)
 				r = {}
-				for own k,v of d
-					if v.active.toString() is type
-						r[k] = v
+				for alert in alerts
+					if alert.active.toString() is type
+						r[alert.username] = alert
 				cb err, r
-			trend : (cb)-> brain.get "cryptoAlerter:trend", (err,d)->
-				d ?= '{}'
-				cb err, JSON.parse(d)
+			trend : (cb)-> brain.get "trend", {}, (err,d)->
+				d ?= {}
+				cb err, d.data
 		}, (err,data)->
 			[userAlerts,trend] = [data.userAlerts,data.trend]
 			now = (new Date().getTime()/1000)

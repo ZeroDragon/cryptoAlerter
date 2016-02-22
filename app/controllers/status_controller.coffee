@@ -19,9 +19,8 @@ exports.valueHTML = (req,res)->
 		coin = rates.filter((e)-> e.code is requested)[0]
 
 		if coin?
-			brain.get 'cryptoAlerter:storage', (err,data)->
-				items = []
-				coinsData = JSON.parse(data).coins
+			brain.get 'storage', {}, (err,data)->
+				coinsData = data.coins
 				d = []
 				for own k1,v of coinsData[coin.code]
 					d.push [k1*1000,v]

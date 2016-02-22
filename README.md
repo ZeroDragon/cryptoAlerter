@@ -5,8 +5,10 @@ A webapp/robot to alert status of cryptocurrency.
 
 ## Requirements  
 
-- Redis  
+- Mongo  
 - Node  
+- Blockchain account with Receive api (optional)
+- Telegram Bot API
 
 ##Webapp:  
 
