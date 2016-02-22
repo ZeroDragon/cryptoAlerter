@@ -75,7 +75,7 @@ _elData = (cb)->
 			h = e.historic
 			delete e.historic
 			e.mxn = parseFloat((e.usd * (1 / data.usd[0].usd)).toFixed(2))
-			e.btc = parseFloat((e.usd * (1 / btc.usd)).toFixed(2))
+			e.btc = parseFloat((e.usd * (1 / btc.usd)).toFixed(8))
 			e.historic = h
 			return e
 
