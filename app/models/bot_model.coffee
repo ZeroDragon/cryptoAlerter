@@ -17,8 +17,8 @@ bot.onText /\/start$|\/start@CryptoAlerterBot$/, (msg)->
 		Or if you know the currency code, you can send /rate CODE
 			Ej: /rate BTC
 			To get the current Bitcoin rate
-		You can even send custom rates to compare coins vs coins
-			Ej: /rate BTC vs MXN,ETH,COP
+		You can even send custom rates to compare coins
+			Ej: /rate BTC in MXN,ETH,COP
 			to get the current Bitcoin rate in USD, MXN, ETH and COP
 	"""
 	bot.sendMessage msg.chat.id, message, {parse_mode : "Markdown"}
@@ -59,14 +59,14 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 				[Chart](#{ownUrl}/status/#{data.code}/true)
 			"""
 			if crosses.length is 0
-				message = """
+				message += """
 					*USD:* #{addCommas(data.usd)}
 					*BTC:* #{addCommas(data.btc)}
 				"""
 			for crossItem in crosses
 				v = parseFloat((data.usd * (1 / crossItem.usd)).toFixed(8))
 				message += "\n*#{crossItem.code}:* #{addCommas(v)}"
-			if crosses.length > 0
+			if crosses.length is 0
 				message += "\n*Action:* _#{data.action}_"
 		bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
 
