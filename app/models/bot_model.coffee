@@ -60,7 +60,7 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 			"""
 			if crosses.length is 0
 				message += """
-					*USD:* #{addCommas(data.usd)}
+					\n*USD:* #{addCommas(data.usd)}
 					*BTC:* #{addCommas(data.btc)}
 				"""
 			for crossItem in crosses
