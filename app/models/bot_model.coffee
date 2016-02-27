@@ -57,13 +57,14 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 			message = """
 				*#{data.name}* _#{data.code}_
 				[Chart](#{ownUrl}/status/#{data.code}/true)
-				*USD:* $#{addCommas(data.usd)}
-				*BTC:* $#{addCommas(data.btc)}
+				*USD:* #{addCommas(data.usd)}
+				*BTC:* #{addCommas(data.btc)}
 			"""
 			for crossItem in crosses
 				v = parseFloat((data.usd * (1 / crossItem.usd)).toFixed(8))
-				message += "\n*#{crossItem.code}:* $#{addCommas(v)}"
-			message += "\n*Action:* _#{data.action}_"
+				message += "\n*#{crossItem.code}:* #{addCommas(v)}"
+			if crosses.length > 0
+				message += "\n*Action:* _#{data.action}_"
 		bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
 
 		# filename = "#{process.cwd()}/snapshots/#{createGuid()}.png"
