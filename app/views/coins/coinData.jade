@@ -28,7 +28,7 @@ table(border="0",cellpadding="4",cellspacing="0").table
 		- upOrDown = coin.historic.w < 0? 'red' : ''
 		td(class="#{upOrDown}") #{addCommas(coin.historic.w)}%
 	tr
-		td(colspan="8")
+		td(colspan="7")
 			div(id="chart#{coin.code}")
 if !standAlone
 	.botones
