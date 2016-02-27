@@ -17,6 +17,9 @@ bot.onText /\/start$|\/start@CryptoAlerterBot$/, (msg)->
 		Or if you know the currency code, you can send /rate CODE
 			Ej: /rate BTC
 			To get the current Bitcoin rate
+		You can even send custom rates to compare coins vs coins
+			Ej: /rate BTC vs MXN,ETH,COP
+			to get the current Bitcoin rate in USD, MXN, ETH and COP
 	"""
 	bot.sendMessage msg.chat.id, message, {parse_mode : "Markdown"}
 
@@ -36,20 +39,31 @@ bot.onText /\/rate$|\/rate@CryptoAlerterBot/, (msg)->
 	bot.sendMessage(msg.chat.id, "What rate you want @#{msg.from.username}?", opts)
 
 bot.onText /\/rate (.*)$/, (msg,match)->
+	match[1] = match[1].toUpperCase()
+	matchArr = match[1].split(' VS ')
+	cross = []
+	if matchArr.length is 1
+		search = match[1]
+	else
+		search = matchArr[0]
+		cross = matchArr[1].split(',')
 	brain.get "trend", {}, (err,d)->
 		d ?= {}
-		data = d.data.filter((e)-> e.code is match[1].toUpperCase())[0]
+		data = d.data.filter((e)-> e.code is search)[0]
+		crosses = d.data.filter((e)->cross.indexOf(e.code) isnt -1)
 		if !data?
 			message = "Not a valid rate code"
 		else
 			message = """
 				*#{data.name}* _#{data.code}_
 				[Chart](#{ownUrl}/status/#{data.code}/true)
-				$#{addCommas(data.usd)} *USD*
-				$#{addCommas(data.mxn)} *MXN*
-				$#{addCommas(data.btc)} *BTC*
-				*Action:* _#{data.action}_
+				*USD:* $#{addCommas(data.usd)}
+				*BTC:* $#{addCommas(data.btc)}
 			"""
+			for crossItem in crosses
+				v = parseFloat((data.usd * (1 / crossItem.usd)).toFixed(8))
+				message += "\n*#{crossItem.code}:* $#{addCommas(v)}"
+			message += "\n*Action:* _#{data.action}_"
 		bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
 
 		# filename = "#{process.cwd()}/snapshots/#{createGuid()}.png"
@@ -61,7 +75,6 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 		# 			#Wait 1 second and delete image
 		# 			fs.unlink filename, (err)->
 		# 		,1000
-
 
 bot.onText /\/activate (.*) untill (.*)$/, (msg,match)->
 	return if msg.from.id isnt config.telegramAdmin
@@ -80,10 +93,8 @@ bot.onText /\/activate (.*) untill (.*)$/, (msg,match)->
 bot.onText /\/unlimited$/, (msg)->
 	callback = "http://cryptoalerter.tk/unlimited?username=#{msg.from.username}&userid=#{msg.from.id}"
 	url = "https://api.blockchain.info/v2/receive?xpub=#{config.blockchain.xPub}&key=#{config.blockchain.API}&callback=#{encodeURIComponent(callback)}"
-	console.log url
 	request.get url, (err,res,body)->
 		body = JSON.parse body
-		console.log body
 		bot.sendMessage msg.from.id, "Ok, now just send 0.005 BTC to #{body.address}"
 
 confirmed = (username,userid)->

@@ -30,7 +30,24 @@ _elData = (cb)->
 					}
 					rows.push obj
 				callback(null,rows)
-
+		cop : (callback)->
+			request.get 'http://finance.yahoo.com/q?s=COPUSD=X', (err,response,body)->
+				throw err if err
+				$ = cheerio.load body
+				copRate = $('.time_rtq_ticker')[0].children[0].children[0].data
+				r = [
+					{
+						"name": "Colombian Pesos",
+						"code": "COP",
+						"usd": parseFloat(copRate),
+						historic : {
+							h:0
+							d:0
+							w:0
+						}
+					}
+				]
+				callback(null,r)
 		usd : (callback)->
 			request.get 'http://finance.yahoo.com/q?s=MXNUSD=X', (err,response,body)->
 				throw err if err
@@ -61,7 +78,7 @@ _elData = (cb)->
 				callback(null,r)
 	},(err,data)->
 		rows = data.crypto
-		rows = rows.concat data.usd
+		rows = rows.concat data.usd, data.cop
 
 		money = rows.filter((e)->e.code is '$$$')[0]
 		if money?
@@ -74,7 +91,6 @@ _elData = (cb)->
 		rows = rows.map (e)->
 			h = e.historic
 			delete e.historic
-			e.mxn = parseFloat((e.usd * (1 / data.usd[0].usd)).toFixed(2))
 			e.btc = parseFloat((e.usd * (1 / btc.usd)).toFixed(8))
 			e.historic = h
 			return e
@@ -145,8 +161,12 @@ _getTrends = (cb)->
 			delete e.data
 			delete e.historic
 			last = data.pop()
-			before = parseFloat((data[-2..].reduce((a,b)->a+b)/data[-2..].length).toFixed(3))
-			average = parseFloat((data.reduce((a,b)->a+b)/data.length).toFixed(3))
+			if data.length > 2
+				before = parseFloat((data[-2..].reduce((a,b)->a+b)/data[-2..].length).toFixed(3))
+				average = parseFloat((data.reduce((a,b)->a+b)/data.length).toFixed(3))
+			else
+				before = 0
+				average = 0
 			e.status = {trend:'same'}
 			e.status.trend = 'up' if last > average
 			e.status.trend = 'down' if last < average

@@ -12,7 +12,6 @@ table(border="0",cellpadding="4",cellspacing="0").table
 		th Name
 		th Code
 		th USD
-		th MXN
 		th BTC
 		th Hour
 		th Day
@@ -21,7 +20,6 @@ table(border="0",cellpadding="4",cellspacing="0").table
 		td #{coin.name}
 		td #{coin.code}
 		td $#{addCommas(coin.usd)}
-		td $#{addCommas(coin.mxn)}
 		td $#{addCommas(coin.btc)}
 		- upOrDown = coin.historic.h < 0? 'red' : ''
 		td(class="#{upOrDown}") #{addCommas(coin.historic.h)}%
