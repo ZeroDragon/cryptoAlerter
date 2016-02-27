@@ -131,7 +131,8 @@ exports.getRates = _getRates
 _getTrends = (cb)->
 	_getRates (rates)-> brain.get "storage", {}, (err,data)->
 		rates = JSON.parse(JSON.stringify(rates))
-		ratesData = rates.filter (e)-> e.mxn >= 0.01
+		ratesData = rates.filter (e)-> true
+		# ratesData = rates.filter (e)-> e.mxn >= 0.01
 		coinsData = data.coins
 		for coin,k in ratesData
 			d = []
