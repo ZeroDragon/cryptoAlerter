@@ -40,7 +40,7 @@ bot.onText /\/rate$|\/rate@CryptoAlerterBot/, (msg)->
 
 bot.onText /\/rate (.*)$/, (msg,match)->
 	match[1] = match[1].toUpperCase()
-	matchArr = match[1].split(' VS ')
+	matchArr = match[1].split(' IN ')
 	cross = []
 	if matchArr.length is 1
 		search = match[1]
@@ -57,9 +57,12 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 			message = """
 				*#{data.name}* _#{data.code}_
 				[Chart](#{ownUrl}/status/#{data.code}/true)
-				*USD:* #{addCommas(data.usd)}
-				*BTC:* #{addCommas(data.btc)}
 			"""
+			if crosses.length is 0
+				message = """
+					*USD:* #{addCommas(data.usd)}
+					*BTC:* #{addCommas(data.btc)}
+				"""
 			for crossItem in crosses
 				v = parseFloat((data.usd * (1 / crossItem.usd)).toFixed(8))
 				message += "\n*#{crossItem.code}:* #{addCommas(v)}"
