@@ -43,18 +43,6 @@ script.
 		max = Math.max(coin#{coin.code}.data[i][1],max);
 	}
 	var min = max;
-	var last4R = coin#{coin.code}.data.slice(-4);
-	var avg = last4R.slice(0,3).map(function(e,k){
-		return e[1];
-	}).reduce(function(p,c){
-		return p+c;
-	})/3;
-	var color = 'rgba(249,243,51,0.2)';
-	if(last4R[last4R.length-1][1]>avg) color='rgba(63,191,63,0.2)';
-	if(last4R[last4R.length-1][1]<avg) color='rgba(191,63,63,0.2)';
-	var last4 = last4R.map(function(e){
-		return e[0];
-	});
 	for(i=0; i<coin#{coin.code}.data.length;i++){
 		min = Math.min(coin#{coin.code}.data[i][1],min);
 	}
@@ -79,12 +67,7 @@ script.
 					return Highcharts.dateFormat('%H:%M', this.value);
 				}
 			},
-			tickInterval: 10*60*1000,
-			plotBands: [{
-				color: color,
-				from: last4[0],
-				to: last4[3]
-			}],
+			tickInterval: 10*60*1000
 		},
 		yAxis: {
 			title: {
