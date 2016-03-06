@@ -43,7 +43,7 @@ script.
 		max = Math.max(coin#{coin.code}.data[i][1],max);
 	}
 	var min = max;
-	var last4R = coin#{coin.code}.data.slice(-4)
+	var last4R = coin#{coin.code}.data.slice(-4);
 	var avg = last4R.slice(0,3).map(function(e,k){
 		return e[1];
 	}).reduce(function(p,c){
