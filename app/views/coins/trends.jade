@@ -22,10 +22,18 @@ block body
 			th USD
 			th BTC
 			th Action
+			th Movement
 		for item in coins
 			tr
 				td: div #{item.name}
 				td: div #{item.code}
 				td: div $#{addCommas(item.usd)}
 				td: div $#{addCommas(item.btc)}
-				td: div #{item.action}
+				td #{item.action}
+				-var upOrDown = item.status.size-100
+				-var color = "inherit"
+				if upOrDown > 0
+					- color = "#0A0"
+				if upOrDown < 0
+					- color = "#A00"
+				td: div(style="color:#{color}") #{(upOrDown).toFixed(2)}%

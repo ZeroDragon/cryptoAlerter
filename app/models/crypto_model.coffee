@@ -171,18 +171,20 @@ _getTrends = (cb)->
 			e.status.trend = 'up' if last > average
 			e.status.trend = 'down' if last < average
 			e.status.movement = last isnt before
-			e.action = 'Not moving'
+			e.status.size = last * 100 / average
+			e.status.size = 100 if e.status.size is Infinity or isNaN(e.status.size)
+			e.action = 'Coin is not moving'
 			e.action = 'Let me go' if e.status.trend is 'up' and !e.status.movement
 			e.action = 'Buy me!' if e.status.trend is 'down' and !e.status.movement
-			e.action = 'Rising' if e.status.trend is 'up' and e.status.movement
-			e.action = 'Declining' if e.status.trend is 'down' and e.status.movement
+			e.action = 'Wait, is rising' if e.status.trend is 'up' and e.status.movement
+			e.action = 'Keep an eye, coin is declining' if e.status.trend is 'down' and e.status.movement
 			return e
 
 		buy = ratesData.filter (e)-> e.action is 'Buy me!'
 		sell = ratesData.filter (e)-> e.action is 'Let me go'
-		still = ratesData.filter (e)-> e.action is 'Not moving'
-		rising = ratesData.filter (e)-> e.action is 'Rising'
-		declining = ratesData.filter (e)-> e.action is 'Declining'
+		still = ratesData.filter (e)-> e.action is 'Coin is not moving'
+		rising = ratesData.filter (e)-> e.action is 'Wait, is rising'
+		declining = ratesData.filter (e)-> e.action is 'Keep an eye, coin is declining'
 
 		toDisplay = [].concat buy,sell,rising,declining,still
 

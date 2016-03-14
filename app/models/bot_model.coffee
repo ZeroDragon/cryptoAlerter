@@ -56,7 +56,7 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 		else
 			message = """
 				*#{data.name}* _#{data.code}_
-				[Chart](#{ownUrl}/status/#{data.code}/true)
+				[#{ownUrl}/status/#{data.code}/true](#{ownUrl}/status/#{data.code}/true)
 			"""
 			if crosses.length is 0
 				message += """
@@ -67,7 +67,10 @@ bot.onText /\/rate (.*)$/, (msg,match)->
 				v = parseFloat((data.usd * (1 / crossItem.usd)).toFixed(8))
 				message += "\n*#{crossItem.code}:* #{addCommas(v)}"
 			if crosses.length is 0
-				message += "\n*Action:* _#{data.action}_"
+				message += "\n*Trend:* _#{data.status.trend}_"
+				message += "\n*Movement:* _#{data.status.movement}_"
+				message += "\n*Volatility:* _#{(data.status.size-100).toFixed(2)}%_"
+				message += "\n*Suggested Action:* _#{data.action}_"
 		bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
 
 		# filename = "#{process.cwd()}/snapshots/#{createGuid()}.png"
@@ -193,9 +196,9 @@ exports.triggerAlerts = (type,cb)->
 							alert['Ready to sell'] = 'Check the market!'
 						if alertData.buy and filteredTrend.action is 'Buy me!'
 							alert['Ready to buy'] = 'Looks promising'
-						if alertData.rising and filteredTrend.action is 'Rising'
+						if alertData.rising and filteredTrend.action is 'Wait, is rising'
 							alert['Coin rising'] = 'Keep on eye on this one'
-						if alertData.declining and filteredTrend.action is 'Declining'
+						if alertData.declining and filteredTrend.action is 'Keep an eye, coin is declining'
 							alert['Coin declining'] = 'Secure your satoshis'
 						if JSON.stringify(alert) isnt '{}'
 							alert.name = filteredTrend.name
