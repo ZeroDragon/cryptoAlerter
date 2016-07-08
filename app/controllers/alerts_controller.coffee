@@ -56,9 +56,9 @@ exports.saveUserAlerts = (req,res)->
 			for own k,v of payload.currencies
 				payload.currencies[k].name =  v.name
 				payload.currencies[k]['maximum-active'] = v['maximum-active'] is 'true'
-				payload.currencies[k]['maximum-value'] = ~~v['maximum-value']
+				payload.currencies[k]['maximum-value'] = parseFloat v['maximum-value']
 				payload.currencies[k]['minimum-active'] = v['minimum-active'] is 'true'
-				payload.currencies[k]['minimum-value'] = ~~v['minimum-value']
+				payload.currencies[k]['minimum-value'] = parseFloat v['minimum-value']
 				payload.currencies[k].sell = v.sell is 'true'
 				payload.currencies[k].buy = v.buy is 'true'
 				payload.currencies[k].rising = v.rising is 'true'
