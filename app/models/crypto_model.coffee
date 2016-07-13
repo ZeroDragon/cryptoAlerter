@@ -30,55 +30,21 @@ _elData = (cb)->
 					}
 					rows.push obj
 				callback(null,rows)
-		cop : (callback)->
-			request.get 'http://finance.yahoo.com/q?s=COPUSD=X', (err,response,body)->
-				throw err if err
-				$ = cheerio.load body
-				copRate = $('.time_rtq_ticker')[0].children[0].children[0].data
-				r = [
-					{
-						"name": "Colombian Pesos",
-						"code": "COP",
-						"usd": parseFloat(copRate),
-						historic : {
-							h:0
-							d:0
-							w:0
-						}
+		official : (callback)->
+			request.get 'http://query.yahooapis.com/v1/public/yql?q=select * from yahoo.finance.quotes where symbol IN ("MXNUSD=X","COPUSD=X","BOBUSD=X")&format=json&env=http://datatables.org/alltables.env',{json:true},(err,data,body)->
+				r = []
+				symbol2name = {"COPUSD=X":"Colombian Peso","MXNUSD=X":"Mexican Peso","BOBUSD=X":"Bolivian Peso"}
+				for item in body.query.results.quote
+					r.push {
+						"name" : symbol2name[item.symbol]
+						"code" : item.symbol.replace(/USD=X/,'')
+						"usd" : parseFloat(item.Ask)
+						historic : {h:0,d:0,w:0}
 					}
-				]
-				callback(null,r)
-		usd : (callback)->
-			request.get 'http://finance.yahoo.com/q?s=MXNUSD=X', (err,response,body)->
-				throw err if err
-				$ = cheerio.load body
-				mxpRate = $('.time_rtq_ticker')[0].children[0].children[0].data
-				r = [
-					{
-						"name": "Mexican Pesos",
-						"code": "MXN",
-						"usd": parseFloat(mxpRate),
-						historic : {
-							h:0
-							d:0
-							w:0
-						}
-					},
-					{
-						"name": "US Dollars",
-						"code": "USD",
-						"usd": 1,
-						historic : {
-							h:0
-							d:0
-							w:0
-						}
-					}
-				]
-				callback(null,r)
+				callback null,r
 	},(err,data)->
 		rows = data.crypto
-		rows = rows.concat data.usd, data.cop
+		rows = rows.concat data.official
 
 		money = rows.filter((e)->e.code is '$$$')[0]
 		if money?
