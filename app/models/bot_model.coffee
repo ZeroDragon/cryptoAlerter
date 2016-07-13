@@ -7,7 +7,7 @@ async = require 'async'
 crypto = CT_LoadModel 'crypto'
 fs = require 'fs'
 
-bot.onText /\/start$|\/start@CryptoAlerterBot$/, (msg)->
+bot.onText /\/start$|\/start@CryptoAlerterBot$/i, (msg)->
 	message = """
 		Welcome, @#{msg.from.username}
 		This is an alert bot designed to send you messages about crypto currencies.
@@ -23,10 +23,10 @@ bot.onText /\/start$|\/start@CryptoAlerterBot$/, (msg)->
 	"""
 	bot.sendMessage msg.chat.id, message, {parse_mode : "Markdown"}
 
-bot.onText /\/rate$|\/rate@CryptoAlerterBot$/, (msg)->
+bot.onText /\/rate$|\/rate@CryptoAlerterBot$/i, (msg)->
 	keyboard = [
-		['/rate BTC','/rate ETH']
-		['/rate DOGE','/rate MXN']
+		['/rate@CryptoAlerterBot BTC','/rate@CryptoAlerterBot ETH']
+		['/rate@CryptoAlerterBot DOGE','/rate@CryptoAlerterBot MXN']
 	]
 	opts = {
 		reply_markup: JSON.stringify({
@@ -38,7 +38,8 @@ bot.onText /\/rate$|\/rate@CryptoAlerterBot$/, (msg)->
 	}
 	bot.sendMessage(msg.chat.id, "What rate you want @#{msg.from.username}?", opts)
 
-bot.onText /\/rate (.*)$|\/rate@CryptoAlerterBot (.*)$/, (msg,match)->
+bot.onText /\/rate (.*)$|\/rate@CryptoAlerterBot (.*)$/i, (msg,match)->
+	match[1] = match[2] if !match[1]?
 	match[1] = match[1].toUpperCase()
 	matchArr = match[1].split(' IN ')
 	cross = []
