@@ -23,7 +23,7 @@ bot.onText /\/start$|\/start@CryptoAlerterBot$/, (msg)->
 	"""
 	bot.sendMessage msg.chat.id, message, {parse_mode : "Markdown"}
 
-bot.onText /\/rate$|\/rate@CryptoAlerterBot/, (msg)->
+bot.onText /\/rate$|\/rate@CryptoAlerterBot$/, (msg)->
 	keyboard = [
 		['/rate BTC','/rate ETH']
 		['/rate DOGE','/rate MXN']
@@ -38,7 +38,7 @@ bot.onText /\/rate$|\/rate@CryptoAlerterBot/, (msg)->
 	}
 	bot.sendMessage(msg.chat.id, "What rate you want @#{msg.from.username}?", opts)
 
-bot.onText /\/rate (.*)$|\/rate (.*)$/, (msg,match)->
+bot.onText /\/rate (.*)$|\/rate@CryptoAlerterBot (.*)$/, (msg,match)->
 	match[1] = match[1].toUpperCase()
 	matchArr = match[1].split(' IN ')
 	cross = []
