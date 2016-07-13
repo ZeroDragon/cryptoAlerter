@@ -34,10 +34,11 @@ _elData = (cb)->
 			request.get 'http://query.yahooapis.com/v1/public/yql?q=select * from yahoo.finance.quotes where symbol IN ("MXNUSD=X","COPUSD=X","BOBUSD=X")&format=json&env=http://datatables.org/alltables.env',{json:true},(err,data,body)->
 				r = []
 				symbol2name = {"COPUSD=X":"Colombian Peso","MXNUSD=X":"Mexican Peso","BOBUSD=X":"Bolivian Peso"}
+				symbol2code = {BOB:"BOL"}
 				for item in body.query.results.quote
 					r.push {
 						"name" : symbol2name[item.symbol]
-						"code" : item.symbol.replace(/USD=X/,'')
+						"code" : symbol2code[item.symbol.replace(/USD=X/,'')] or item.symbol.replace(/USD=X/,'')
 						"usd" : parseFloat(item.Ask)
 						historic : {h:0,d:0,w:0}
 					}
