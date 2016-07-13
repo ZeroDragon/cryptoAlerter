@@ -38,7 +38,7 @@ bot.onText /\/rate$|\/rate@CryptoAlerterBot/, (msg)->
 	}
 	bot.sendMessage(msg.chat.id, "What rate you want @#{msg.from.username}?", opts)
 
-bot.onText /\/rate (.*)$/, (msg,match)->
+bot.onText /\/rate (.*)$|\/rate (.*)$/, (msg,match)->
 	match[1] = match[1].toUpperCase()
 	matchArr = match[1].split(' IN ')
 	cross = []
