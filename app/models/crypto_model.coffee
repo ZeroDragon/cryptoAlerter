@@ -42,6 +42,12 @@ _elData = (cb)->
 						"usd" : parseFloat(item.Ask)
 						historic : {h:0,d:0,w:0}
 					}
+				r.push {
+					"name": "US Dollars",
+					"code": "USD",
+					"usd": 1,
+					historic : {h:0,d:0,w:0}
+				}
 				callback null,r
 	},(err,data)->
 		rows = data.crypto

@@ -13,30 +13,45 @@ bot.onText /\/start$|\/start@CryptoAlerterBot$/i, (msg)->
 		This is an alert bot designed to send you messages about crypto currencies.
 		All the configuration is done [HERE](http://cryptoalerter.tk/alerts).
 		When the bot is configured it will send you your desired alerts.
-		Also, you can ask for some common rates using /rate
-		Or if you know the currency code, you can send /rate CODE
+		Also, you can ask for an specific rate using /rate CODE
 			Ej: /rate BTC
 			To get the current Bitcoin rate
+
 		You can even send custom rates to compare coins
 			Ej: /rate BTC in MXN,ETH,COP
 			to get the current Bitcoin rate in USD, MXN, ETH and COP
+
+		Want to convert some coins to other coins?
+			/convert 5 BTC to ETH
+			to get the value of 5 BTC in ETH
+
+		Click [HERE](http://cryptoalerter.tk/trends) for a list of all possible rate codes
 	"""
 	bot.sendMessage msg.chat.id, message, {parse_mode : "Markdown"}
 
-bot.onText /\/rate$|\/rate@CryptoAlerterBot$/i, (msg)->
-	keyboard = [
-		['/rate@CryptoAlerterBot BTC','/rate@CryptoAlerterBot ETH']
-		['/rate@CryptoAlerterBot DOGE','/rate@CryptoAlerterBot MXN']
-	]
-	opts = {
-		reply_markup: JSON.stringify({
-			one_time_keyboard : true
-			resize_keyboard : true
-			keyboard: keyboard
-			selective : true
-		})
-	}
-	bot.sendMessage(msg.chat.id, "What rate you want @#{msg.from.username}?", opts)
+bot.onText /\/convert (.*) (.*) to (.*)$|\/convert@CryptoAlerterBot (.*) (.*) to (.*)/, (msg,match)->
+	if match[1] is undefined and match[2] is undefined and match[3] is undefined
+		match[1] = match[4]
+		match[2] = match[5]
+		match[3] = match[6]
+	brain.get "trend", {}, (err,d)->
+		match[1] = parseFloat(match[1])
+		if !isNaN(match[1])
+			data = d.data.filter((e)-> e.code is match[2].toUpperCase())[0]
+			cross = d.data.filter((e)-> e.code is match[3].toUpperCase())[0]
+
+			if data? and cross?
+				message = "#{match[1]} #{match[2]} ≈ "
+				v = parseFloat((data.usd * (1 / cross.usd)).toFixed(8)) * parseFloat(match[1])
+				message += "#{addCommas(v)} #{cross.name}(#{cross.code})"
+			else
+				cuales = []
+				cuales.push match[2] if !data?
+				cuales.push match[3] if !cross?
+				message = "coin(s) not found: #{cuales.join(',')}"
+		else
+			message = "uh?"
+		bot.sendMessage msg.chat.id, message
 
 bot.onText /\/rate (.*)$|\/rate@CryptoAlerterBot (.*)$/i, (msg,match)->
 	match[1] = match[2] if !match[1]?
@@ -56,8 +71,7 @@ bot.onText /\/rate (.*)$|\/rate@CryptoAlerterBot (.*)$/i, (msg,match)->
 			message = "Not a valid rate code"
 		else
 			message = """
-				*#{data.name}* _#{data.code}_
-				[#{ownUrl}/status/#{data.code}/true](#{ownUrl}/status/#{data.code}/true)
+				*#{data.name}* _#{data.code}_ [chart](#{ownUrl}/status/#{data.code}/true)
 			"""
 			if crosses.length is 0
 				message += """
@@ -73,16 +87,6 @@ bot.onText /\/rate (.*)$|\/rate@CryptoAlerterBot (.*)$/i, (msg,match)->
 				message += "\n*Volatility:* _#{(data.status.size-100).toFixed(2)}%_"
 				message += "\n*Suggested Action:* _#{data.action}_"
 		bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
-
-		# filename = "#{process.cwd()}/snapshots/#{createGuid()}.png"
-		# request("http://cryptoalerter.tk:8079/#{ownUrl}/status/#{data.code}/true")
-		# 	.pipe(fs.createWriteStream(filename))
-		# 	.on 'close', ->
-		# 		bot.sendPhoto msg.chat.id, filename
-		# 		setTimeout ->
-		# 			#Wait 1 second and delete image
-		# 			fs.unlink filename, (err)->
-		# 		,1000
 
 bot.onText /\/activate (.*) untill (.*)$/, (msg,match)->
 	return if msg.from.id isnt config.telegramAdmin
