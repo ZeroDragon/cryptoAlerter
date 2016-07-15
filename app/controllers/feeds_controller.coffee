@@ -4,9 +4,9 @@ feed = require "feed-read"
 simplyfy = (feedName,data,cb)->
 	data.database ?= {
 		_id : feedName
-		updated : ~~(new Date().getTime()/1000)
 		articles : []
 		channels : []
+		lastPosts :[]
 		name : data.source[0].feed.name
 		newItem : true
 	}
@@ -25,9 +25,14 @@ simplyfy = (feedName,data,cb)->
 			link : e.link
 			blogName : e.feed.name
 		}
-	newItems = data.database.articles.filter (e)->
-		e.published > data.database.updated
-	data.database.updated = ~~(new Date().getTime()/1000)
+	
+	newItems ?= []
+	for item in data.database.articles
+		if lastPosts.indexOf(item.link) is -1
+			newItems.push item
+			data.database.lastPosts.unshift item.link
+
+	data.database.lastPosts = data.database.lastPosts[0...20]
 
 	brain.set "feeds", data.database, (err,resp)->
 		data.database.articles = newItems

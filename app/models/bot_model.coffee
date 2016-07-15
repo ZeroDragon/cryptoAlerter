@@ -155,7 +155,7 @@ bot.onText /\/news (.*)|\/news@CryptoAlerterBot (.*)$/i, (msg,match)->
 					bot.sendMessage msg.chat.id, "feed id is required"
 				else
 					brain.get "feeds", {_id:feedID}, (err,data)->
-						data.channels.push msg.chat.id
+						data.channels.push msg.chat.id.toString()
 						data.channels = data.channels.filter (i,k,s)-> s[k] is i
 						brain.set "feeds", data
 						bot.sendMessage msg.chat.id, "This channel has been subscribed to #{data.name} news feed"
