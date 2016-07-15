@@ -30,7 +30,7 @@ simplyfy = (feedName,data,cb)->
 	data.database.updated = ~~(new Date().getTime()/1000)
 
 	brain.set "feeds", data.database, (err,resp)->
-		# data.database.articles = newItems
+		data.database.articles = newItems
 		cb data.database
 
 exports.update = (req,res)->
