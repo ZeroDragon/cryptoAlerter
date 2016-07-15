@@ -28,7 +28,7 @@ simplyfy = (feedName,data,cb)->
 	
 	newItems = []
 	for item in data.database.articles
-		if lastPosts.indexOf(item.link) is -1
+		if data.database.lastPosts.indexOf(item.link) is -1
 			newItems.push item
 			data.database.lastPosts.unshift item.link
 
