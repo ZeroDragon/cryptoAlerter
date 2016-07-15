@@ -26,7 +26,7 @@ simplyfy = (feedName,data,cb)->
 			blogName : e.feed.name
 		}
 	
-	newItems ?= []
+	newItems = []
 	for item in data.database.articles
 		if lastPosts.indexOf(item.link) is -1
 			newItems.push item
