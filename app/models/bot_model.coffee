@@ -186,10 +186,10 @@ bot.onText /\/news (.*)$/, (msg,match)->
 	else
 		bot.sendMessage msg.chat.id, """
 			Usage:
-			/news list 
+			/news list
 			/news subscribe <list-item>
 			/news unsubscribe <list-item>
-			/news from <list-item>
+			/news from <list-item> [items]
 		"""
 
 exports.gotPayment = (query,cb)->
