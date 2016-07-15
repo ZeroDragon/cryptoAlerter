@@ -136,7 +136,8 @@ bot.onText /\/confirm (.*)$/, (msg,match)->
 		else
 			bot.sendMessage msg.from.id, "Code not recognized"
 
-bot.onText /\/news (.*)$/, (msg,match)->
+bot.onText /\/news (.*)|\/news@CryptoAlerterBot (.*)$/i, (msg,match)->
+	match[1] = match[2] if !match[1]?
 	[command,feedID,ammount] = match[1].split(' ')
 	available = ['list','subscribe','unsubscribe','from']
 
