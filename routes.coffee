@@ -1,6 +1,7 @@
 main = CT_LoadController 'main'
 status = CT_LoadController 'status'
 alerts = CT_LoadController 'alerts'
+feeds = CT_LoadController 'feeds'
 
 app.get '/', main.home
 # app.get '/status/:currency.json', status.value
@@ -9,6 +10,7 @@ app.get '/chart/:currency', status.valueImage
 app.get '/trends', status.trends
 app.get '/alerts', alerts.main
 app.get '/unlimited', alerts.unlimited
+app.get '/updateFeeds', feeds.update
 
 app.post '/bot/askForConfirmation', alerts.askForConfirmation
 app.post '/bot/isItConfirmed', alerts.isItConfirmed

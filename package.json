@@ -17,9 +17,10 @@
     "async": "^1.5.2",
     "chaitea-framework": "1.0.17",
     "cheerio": "^0.20.0",
+    "feed-read": "0.0.1",
+    "mongodb": "1.4.31",
     "node-telegram-bot-api": "^0.20.1",
     "phantom": "^0.8.4",
-    "mongodb": "1.4.31",
     "request": "^2.69.0"
   }
 }

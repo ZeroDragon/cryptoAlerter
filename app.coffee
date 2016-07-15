@@ -21,8 +21,12 @@ MongoClient.connect config.mongo, (err,db)->
 						cb null,data
 			set : (collection, element, cb)->
 				cb ?= ->
-				if element._id?
-					db.collection("#{collection}").update {_id:element._id}, element, cb
+				if element._id? or element.newItem?
+					if element.newItem?
+						delete element.newItem
+						db.collection("#{collection}").insert element, cb
+					else
+						db.collection("#{collection}").update {_id:element._id}, element, cb
 				else
 					element._id = createguid()
 					db.collection("#{collection}").insert element, cb
