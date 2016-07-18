@@ -205,8 +205,8 @@ bot.onText /\/news (.*)|\/news@CryptoAlerterBot (.*)$/i, (msg,match)->
 							item.articles = item.articles[0...ammount]
 							message = item.articles.map((e)->
 								title = e.title
-								if title.length > 30
-									title = title[0...30]+'...'
+								if title.length > 60
+									title = title[0...60]+'...'
 								"#{e.blogName}: [#{title}](#{e.link})"
 							).join('\n')
 							bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
