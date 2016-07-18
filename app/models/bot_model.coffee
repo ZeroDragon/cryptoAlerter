@@ -13,21 +13,29 @@ bot.onText /\/start$|\/start@CryptoAlerterBot$/i, (msg)->
 		This is an alert bot designed to send you messages about crypto currencies.
 		All the configuration is done [HERE](http://cryptoalerter.tk/alerts).
 		When the bot is configured it will send you your desired alerts.
-		Also, you can ask for an specific rate using /rate CODE
-			Ej: /rate BTC
+		Also, you can ask for an specific rate using */rate CODE*
+			Ej: `/rate BTC`
 			To get the current Bitcoin rate
 
 		You can even send custom rates to compare coins
-			Ej: /rate BTC in MXN,ETH,COP
+			Ej: `/rate BTC in MXN,ETH,COP`
 			to get the current Bitcoin rate in USD, MXN, ETH and COP
 
 		Want to convert some coins to other coins?
-			/convert 5 BTC to ETH
+			Ej: `/convert 5 BTC to ETH`
 			to get the value of 5 BTC in ETH
 
 		Click [HERE](http://cryptoalerter.tk/trends) for a list of all possible rate codes
 	"""
 	bot.sendMessage msg.chat.id, message, {parse_mode : "Markdown"}
+
+bot.onText /\/convert$|\/convert@CryptoAlerterBot$/i,(msg,match)->
+	message = """
+		Usage:
+			*/convert AMMOUNT ORIGIN to DESTINATION*
+			ej: `/convert 5 BTC to ETH`
+	"""
+	bot.sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
 
 bot.onText /\/convert (.*) (.*) to (.*)$|\/convert@CryptoAlerterBot (.*) (.*) to (.*)/, (msg,match)->
 	if match[1] is undefined and match[2] is undefined and match[3] is undefined
@@ -52,6 +60,19 @@ bot.onText /\/convert (.*) (.*) to (.*)$|\/convert@CryptoAlerterBot (.*) (.*) to
 		else
 			message = "uh?"
 		bot.sendMessage msg.chat.id, message
+
+bot.onText /\/rate$|\/rate@CryptoAlerterBot$/i,(msg,match)->
+	message = """
+		Usage:
+			*/rate CODE*
+			To get the requested coin rate in USD and some other data
+			ej: `/rate BTC`
+
+			*/rate CODE [IN CODE[,CODE]]*
+			To get the requested coin rate in a converted coin
+			ej: `/rate BTC in MXN,COP,LTC,ETH`
+	"""
+	bot.sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
 
 bot.onText /\/rate (.*)$|\/rate@CryptoAlerterBot (.*)$/i, (msg,match)->
 	match[1] = match[2] if !match[1]?
@@ -135,6 +156,14 @@ bot.onText /\/confirm (.*)$/, (msg,match)->
 			confirmed(msg.from.username,msg.from.id)
 		else
 			bot.sendMessage msg.from.id, "Code not recognized"
+
+bot.onText /\/news$|\/news@CryptoAlerterBot$/i,(msg,match)->
+	message = """
+		Usage:
+			*/news [list|subscribe|unsubscribe|from|help]*
+			ej: `/rate help`
+	"""
+	bot.sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
 
 bot.onText /\/news (.*)|\/news@CryptoAlerterBot (.*)$/i, (msg,match)->
 	match[1] = match[2] if !match[1]?
