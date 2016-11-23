@@ -49,9 +49,18 @@ _elData = (cb)->
 					historic : {h:0,d:0,w:0}
 				}
 				callback null,r
+		bitso : (callback)->
+			request.get "https://bitso.com/api/v2/ticker?book=btc_mxn",{json:true},(err,data,body)->
+				callback(null,{
+					"name":"Bitso BTC"
+					"code":"BITSO"
+					"usd" : 0
+					historic : {h:0,d:0,w:0}
+				})
 	},(err,data)->
 		rows = data.crypto
 		rows = rows.concat data.official
+		bitso = data.bitso
 
 		money = rows.filter((e)->e.code is '$$$')[0]
 		if money?
@@ -60,6 +69,8 @@ _elData = (cb)->
 			rows.push money
 
 		btc = rows.filter((e)->e.code is 'BTC')[0]
+		bitso.usd = btc.usd
+		rows.push bitso
 
 		rows = rows.map (e)->
 			h = e.historic
