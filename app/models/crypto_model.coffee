@@ -54,7 +54,7 @@ _elData = (cb)->
 				callback(null,{
 					"name":"Bitso BTC"
 					"code":"BITSO"
-					"usd" : 0
+					"mxn" : parseFloat(body.ask)
 					historic : {h:0,d:0,w:0}
 				})
 	},(err,data)->
@@ -69,7 +69,8 @@ _elData = (cb)->
 			rows.push money
 
 		btc = rows.filter((e)->e.code is 'BTC')[0]
-		bitso.usd = btc.usd
+		mxn = rows.filter((e)->e.code is 'MXN')[0]
+		bitso.usd = parseFloat((mxn.usd * bitso.mxn).toFixed(8))
 		rows.push bitso
 
 		rows = rows.map (e)->
