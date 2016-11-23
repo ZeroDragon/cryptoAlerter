@@ -57,10 +57,24 @@ _elData = (cb)->
 					"mxn" : parseFloat(body.ask)
 					historic : {h:0,d:0,w:0}
 				})
+		volabit : (callback)->
+			request.get 'https://www.volabit.com/en/legal', (err,response,body)->
+				$ = cheerio.load body
+				rs = $('.navbar-collapse.collapse ul li:first-child a')[0].children[0].data
+				rs = rs.replace('1 BTC = $','')
+				rs = rs.replace(' MXN','')
+				rs = rs.replace(/[^0-9]/g,'')
+				callback(null,{
+					"name":"Volabit BTC"
+					"code":"VOLABIT"
+					"mxn" : parseFloat(rs)
+					historic : {h:0,d:0,w:0}
+				})
 	},(err,data)->
 		rows = data.crypto
 		rows = rows.concat data.official
 		bitso = data.bitso
+		volabit = data.volabit
 
 		money = rows.filter((e)->e.code is '$$$')[0]
 		if money?
@@ -71,7 +85,9 @@ _elData = (cb)->
 		btc = rows.filter((e)->e.code is 'BTC')[0]
 		mxn = rows.filter((e)->e.code is 'MXN')[0]
 		bitso.usd = parseFloat((mxn.usd * bitso.mxn).toFixed(8))
+		volabit.usd = parseFloat((mxn.usd * volabit.mxn).toFixed(8))
 		rows.push bitso
+		rows.push volabit
 
 		rows = rows.map (e)->
 			h = e.historic
