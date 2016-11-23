@@ -31,9 +31,9 @@ _elData = (cb)->
 					rows.push obj
 				callback(null,rows)
 		official : (callback)->
-			request.get 'http://query.yahooapis.com/v1/public/yql?q=select * from yahoo.finance.quotes where symbol IN ("MXNUSD=X","COPUSD=X","BOBUSD=X")&format=json&env=http://datatables.org/alltables.env',{json:true},(err,data,body)->
+			request.get 'http://query.yahooapis.com/v1/public/yql?q=select * from yahoo.finance.quotes where symbol IN ("MXNUSD=X","COPUSD=X","BOBUSD=X","EURUSD=X")&format=json&env=http://datatables.org/alltables.env',{json:true},(err,data,body)->
 				r = []
-				symbol2name = {"COPUSD=X":"Colombian Peso","MXNUSD=X":"Mexican Peso","BOBUSD=X":"Bolivian Peso"}
+				symbol2name = {"COPUSD=X":"Colombian Peso","MXNUSD=X":"Mexican Peso","BOBUSD=X":"Bolivian Peso","EURUSD=X":"Euro"}
 				symbol2code = {BOB:"BOL"}
 				for item in body.query.results.quote
 					r.push {
