@@ -55,32 +55,38 @@ _elData = (cb)->
 					historic : {h:0,d:0,w:0}
 				}
 				callback null,r
-		bitso : (callback)->
-			request.get "https://bitso.com/api/v2/ticker?book=btc_mxn",{json:true},(err,data,body)->
+		bETHso : (callback)->
+			request.get "https://bitso.com/api/v2/ticker?book=eth_mxn",{json:true},(err,data,body)->
 				callback(null,{
-					"name":"Bitso BTC"
-					"code":"BITSO"
+					"name":"Bitso ETH"
+					"code":"BETHSO"
 					"mxn" : parseFloat(body.ask)
 					historic : {h:0,d:0,w:0}
 				})
-		# volabit : (callback)->
-		# 	request.get 'https://www.volabit.com/en/legal', (err,response,body)->
-		# 		$ = cheerio.load body
-		# 		rs = $('.navbar-collapse.collapse ul li:first-child a')[0].children[0].data
-		# 		rs = rs.replace('1 BTC = $','')
-		# 		rs = rs.replace(' MXN','')
-		# 		rs = rs.replace(/[^0-9]/g,'')
-		# 		callback(null,{
-		# 			"name":"Volabit BTC"
-		# 			"code":"VOLABIT"
-		# 			"mxn" : parseFloat(rs)
-		# 			historic : {h:0,d:0,w:0}
-		# 		})
+		locals : (callback)->
+			request.get 'http://coinmonitor.com.mx/data_mx.json', {json:true}, (err,response,body)->
+				bitso = body.BITSO_sell.replace(/,/g,'')
+				volabit = body.VOLABIT_buy.replace(/,/g,'')
+				callback(null,{
+					bitso : {
+						"name":"Bitso BTC"
+						"code":"BITSO"
+						"mxn" : parseFloat(bitso)
+						historic : {h:0,d:0,w:0}
+					},
+					volabit : {
+						"name":"Volabit BTC"
+						"code":"VOLABIT"
+						"mxn" : parseFloat(volabit)
+						historic : {h:0,d:0,w:0}
+					}
+				})
 	},(err,data)->
 		rows = data.crypto
 		rows = rows.concat data.official
-		bitso = data.bitso
-		# volabit = data.volabit
+		bethso = data.bETHso
+		bitso = data.locals.bitso
+		volabit = data.locals.volabit
 
 		money = rows.filter((e)->e.code is '$$$')[0]
 		if money?
@@ -90,8 +96,11 @@ _elData = (cb)->
 
 		btc = rows.filter((e)->e.code is 'BTC')[0]
 		mxn = rows.filter((e)->e.code is 'MXN')[0]
+		bethso.usd = parseFloat((mxn.usd * bethso.mxn).toFixed(8))
 		bitso.usd = parseFloat((mxn.usd * bitso.mxn).toFixed(8))
-		# volabit.usd = parseFloat((mxn.usd * volabit.mxn).toFixed(8))
+		volabit.usd = parseFloat((mxn.usd * volabit.mxn).toFixed(8))
+		rows.push bethso
+		rows.push volabit
 		rows.push bitso
 		# rows.push volabit
 
