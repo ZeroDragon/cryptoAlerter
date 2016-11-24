@@ -157,71 +157,6 @@ bot.onText /\/confirm (.*)$/, (msg,match)->
 		else
 			bot.sendMessage msg.from.id, "Code not recognized"
 
-bot.onText /\/news$|\/news@CryptoAlerterBot$/i,(msg,match)->
-	message = """
-		Usage:
-			*/news [list|subscribe|unsubscribe|from|help]*
-			ej: `/rate help`
-	"""
-	bot.sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
-
-bot.onText /\/news (.*)|\/news@CryptoAlerterBot (.*)$/i, (msg,match)->
-	match[1] = match[2] if !match[1]?
-	[command,feedID,ammount] = match[1].split(' ')
-	available = ['list','subscribe','unsubscribe','from']
-
-	if available.indexOf(command) isnt -1
-		{
-			list : ->
-				brain.get "feeds", {}, (err,data)->
-					data = [].concat data
-					data = data.map (e)-> "- #{e.name} (#{e._id})"
-					message = "News feed list:\n"
-					message += data.join '\n'
-					bot.sendMessage msg.chat.id, message
-			subscribe : ->
-				if !feedID?
-					bot.sendMessage msg.chat.id, "feed id is required"
-				else
-					brain.get "feeds", {_id:feedID}, (err,data)->
-						data.channels.push msg.chat.id.toString()
-						data.channels = data.channels.filter (i,k,s)-> s[k] is i
-						brain.set "feeds", data
-						bot.sendMessage msg.chat.id, "This channel has been subscribed to #{data.name} news feed"
-			unsubscribe : ->
-				if !feedID?
-					bot.sendMessage msg.chat.id, "feed id is required"
-				else
-					brain.del "feeds", {_id:feedID}
-					bot.sendMessage msg.chat.id, "Unsubscribed from #{feedID}"
-			from : ->
-				if !feedID?
-					bot.sendMessage msg.chat.id, "feed id is required"
-				else
-					ammount ?= 5
-					brain.get "feeds", {_id:feedID}, (err,item)->
-						if item?
-							message = []
-							item.articles = item.articles[0...ammount]
-							message = item.articles.map((e)->
-								title = e.title
-								if title.length > 60
-									title = title[0...60]+'...'
-								"#{e.blogName}: [#{title}](#{e.link})"
-							).join('\n')
-							bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
-						else
-							bot.sendMessage msg.chat.id, "news feed not found"
-		}[command]()
-	else
-		bot.sendMessage msg.chat.id, """
-			Usage:
-			/news list
-			/news subscribe <list-item>
-			/news unsubscribe <list-item>
-			/news from <list-item> [items]
-		"""
-
 exports.gotPayment = (query,cb)->
 	message = ["Got payment"]
 	query.value = query.value / 100000000
@@ -230,22 +165,6 @@ exports.gotPayment = (query,cb)->
 	message = message.join('\n')
 	bot.sendMessage config.telegramAdmin, message, {parse_mode:"Markdown"}
 	cb true
-
-exports.sendNews = (toDo)->
-	for item in toDo
-		message = []
-		message = item.articles.map((e)->
-			title = e.title
-			if title.length > 30
-				title = title[0...30]+'...'
-			"#{e.blogName}: [#{title}](#{e.link})").join('\n')
-		message += "\n\nDont want to see this? send /news unsubscribe #{item.id}"
-		
-		bot.sendMessage(item.channel, message, {parse_mode:"Markdown"}).catch (err)->
-			brain.get "feeds", {_id:item.id}, (err,data)->
-				data.channels = data.channels.filter (e)-> e.toString() isnt item.channel.toString()
-				brain.set "feeds", data, (err,data)->
-
 
 exports.triggerAlerts = (type,cb)->
 	sendMessages = (alertsGrouped)->
