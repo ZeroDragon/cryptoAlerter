@@ -65,7 +65,7 @@ _elData = (cb)->
 				})
 		locals : (callback)->
 			request.get 'http://coinmonitor.com.mx/data_mx.json', {json:true}, (err,response,body)->
-				bitso = body.BITSO_sell.replace(/,/g,'')
+				bitso = body.BITSO_buy.replace(/,/g,'')
 				volabit = body.VOLABIT_buy.replace(/,/g,'')
 				callback(null,{
 					bitso : {
