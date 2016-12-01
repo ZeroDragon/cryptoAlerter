@@ -8,6 +8,7 @@ crypto = CT_LoadModel 'crypto'
 fs = require 'fs'
 
 bot.onText /\/start$|\/start@CryptoAlerterBot$/i, (msg)->
+	console.log msg
 	message = """
 		Welcome, @#{msg.from.username}
 		This is an alert bot designed to send you messages about crypto currencies.
@@ -26,6 +27,10 @@ bot.onText /\/start$|\/start@CryptoAlerterBot$/i, (msg)->
 			to get the value of 5 BTC in ETH
 
 		Click [HERE](http://cryptoalerter.tk/trends) for a list of all possible rate codes
+
+		Having troubles? Contact me @ZeroDragon
+
+		Enjoy!
 	"""
 	bot.sendMessage msg.chat.id, message, {parse_mode : "Markdown"}
 
