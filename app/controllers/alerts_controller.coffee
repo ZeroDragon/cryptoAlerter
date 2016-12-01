@@ -72,8 +72,9 @@ exports.triggerAlerts = (req,res)->
 	res.sendStatus 200
 
 exports.unlimited = (req,res)->
-	if ~~req.query.confirmations is 0 or ~~req.query.confirmations is 3
+	if ~~req.query.confirmations is 0
 		botModel.gotPayment req.query, ->
 			res.sendStatus 200
 	if ~~req.query.confirmations is 3
-		res.send '*ok*'
+		botModel.gotPayment req.query, ->
+			res.send '*ok*'
