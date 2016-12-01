@@ -8,7 +8,6 @@ crypto = CT_LoadModel 'crypto'
 fs = require 'fs'
 
 bot.onText /\/start$|\/start@CryptoAlerterBot$/i, (msg)->
-	console.log msg
 	message = """
 		Welcome, @#{msg.from.username}
 		This is an alert bot designed to send you messages about crypto currencies.
