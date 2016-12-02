@@ -31,30 +31,31 @@ _elData = (cb)->
 					rows.push obj
 				callback(null,rows)
 		official : (callback)->
-			request.get 'http://query.yahooapis.com/v1/public/yql?q=select * from yahoo.finance.quotes where symbol IN ("MXNUSD=X","COPUSD=X","BOBUSD=X","EURUSD=X","ARSUSD=X")&format=json&env=http://datatables.org/alltables.env',{json:true},(err,data,body)->
+			request.get 'http://coinmill.com/frame.js', (err,data,body)->
+				currencyData = body.split(';')[0].replace('var currency_data=','')
+				currency_convert = (d,c)->
+					currency_sdrPer = {}
+					for e in currencyData.split("|")
+						currency_sdrPer[e.split(",")[0]] = e.split(",")[1]
+					return currency_sdrPer[d]/currency_sdrPer[c]
+				monedas = [
+					["USD","US Dollars"]
+					["MXN","Mexican Peso"],
+					["COP","Colombian Peso"],
+					["BOB","Bolivian Boliviano"],
+					["EUR","Euro"],
+					["ARS","Argentine Peso"],
+					["VEF","Venezuelan Bolivar Fuerte"]
+				]
 				r = []
-				symbol2name = {
-					"COPUSD=X":"Colombian Peso",
-					"MXNUSD=X":"Mexican Peso",
-					"BOBUSD=X":"Bolivian Peso",
-					"EURUSD=X":"Euro",
-					"ARSUSD=X":"Argentine peso"
-				}
-				symbol2code = {BOB:"BOL"}
-				for item in body.query.results.quote
+				for moneda in monedas
 					r.push {
-						"name" : symbol2name[item.symbol]
-						"code" : symbol2code[item.symbol.replace(/USD=X/,'')] or item.symbol.replace(/USD=X/,'')
-						"usd" : parseFloat(item.Ask)
+						code : moneda[0]
+						name : moneda[1]
+						usd : currency_convert(moneda[0],'USD')
 						historic : {h:0,d:0,w:0}
 					}
-				r.push {
-					"name": "US Dollars",
-					"code": "USD",
-					"usd": 1,
-					historic : {h:0,d:0,w:0}
-				}
-				callback null,r
+				callback null, r
 		bETHso : (callback)->
 			request.get "https://bitso.com/api/v2/ticker?book=eth_mxn",{json:true},(err,data,body)->
 				callback(null,{
