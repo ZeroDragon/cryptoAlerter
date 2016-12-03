@@ -25,6 +25,10 @@ bot.onText /\/start$|\/start@CryptoAlerterBot$/i, (msg)->
 			Ej: `/convert 5 BTC to ETH`
 			to get the value of 5 BTC in ETH
 
+		Wondering how localbitcoins is selling BTC?
+			ej: `/local US`
+			to get the minimum, maximum and average value of BTC for US
+
 		Click [HERE](http://cryptoalerter.tk/trends) for a list of all possible rate codes
 
 		Having troubles? Contact me @ZeroDragon
