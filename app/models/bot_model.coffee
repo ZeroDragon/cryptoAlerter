@@ -133,6 +133,7 @@ bot.onText /\/local$|\/local@CryptoAlerterBot$/i, (msg,match)->
 	"""
 	bot.sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
 bot.onText /\/local (.*)$|\/local@CryptoAlerterBot (.*)$/i, (msg,match)->
+	match[1] = match[2] if !match[1]?
 	matchArr = match[1].split(',')
 	brain.get "trend", {}, (err,d)->
 		d ?= {}
