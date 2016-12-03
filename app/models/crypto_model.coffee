@@ -130,7 +130,6 @@ _elData = (cb)->
 			lbtc.min = parseFloat((lbtc.min * (1 / cc.usd)).toFixed(8))
 			lbtc.max = parseFloat((lbtc.max * (1 / cc.usd)).toFixed(8))
 			lbtc.avr = parseFloat((lbtc.avr * (1 / cc.usd)).toFixed(8))
-		console.log btc
 		rows = rows.filter((e)->e.code isnt 'BTC')
 		rows.push btc
 
