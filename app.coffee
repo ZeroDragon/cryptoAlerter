@@ -7,6 +7,7 @@ MongoClient.connect config.mongo, (err,db)->
 
 	CT_Infusion {
 		request : require 'request'
+		util : require 'util'
 		brain : {
 			get : (collection, query, cb)->
 				cb ?= ->

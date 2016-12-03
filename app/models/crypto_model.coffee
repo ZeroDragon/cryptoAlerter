@@ -46,6 +46,7 @@ _elData = (cb)->
 					["EUR","Euro"],
 					["ARS","Argentine Peso"],
 					["VEF","Venezuelan Bolivar Fuerte"]
+					["CLP","Chilean Peso"]
 				]
 				r = []
 				for moneda in monedas
@@ -54,6 +55,7 @@ _elData = (cb)->
 						name : moneda[1]
 						usd : currency_convert(moneda[0],'USD')
 						historic : {h:0,d:0,w:0}
+						isNational : true
 					}
 				callback null, r
 		bETHso : (callback)->
@@ -82,6 +84,23 @@ _elData = (cb)->
 						historic : {h:0,d:0,w:0}
 					}
 				})
+		localbitcoins : (callback)->
+			fn = (code,name,coin,localCode,fncb)->
+				request.get "https://localbitcoins.com/buy-bitcoins-online/#{code}/true/.json", {json:true}, (err,response,body)->
+					min = max = body.data.ad_list[0].data.temp_price_usd
+					avr = 0
+					for itm in body.data.ad_list
+						min = Math.min(min,parseFloat(itm.data.temp_price_usd))
+						max = Math.max(max,parseFloat(itm.data.temp_price_usd))
+						avr += parseFloat(itm.data.temp_price_usd)
+					avr = avr / body.data.ad_list.length
+					fncb null, {min:min,max:max,avr:avr,country:name,coin:coin,localCode:localCode}
+			async.parallel {
+				us : (icb)-> fn 'us','United States', '$', 'USD',icb
+				mx : (icb)-> fn 'mx', 'México', '$', 'MXN', icb
+				es : (icb)-> fn 'es', 'España', '€', 'EUR', icb
+				cl : (icb)-> fn 'cl', 'Chile', '$', 'CLP', icb
+			},callback
 	},(err,data)->
 		rows = data.crypto
 		rows = rows.concat data.official
@@ -103,7 +122,17 @@ _elData = (cb)->
 		rows.push bethso
 		rows.push volabit
 		rows.push bitso
-		# rows.push volabit
+
+
+		btc.localbitcoins = data.localbitcoins
+		for cc, lbtc of btc.localbitcoins
+			cc = rows.filter((e)->e.code is lbtc.localCode)[0]
+			lbtc.min = parseFloat((lbtc.min * (1 / cc.usd)).toFixed(8))
+			lbtc.max = parseFloat((lbtc.max * (1 / cc.usd)).toFixed(8))
+			lbtc.avr = parseFloat((lbtc.avr * (1 / cc.usd)).toFixed(8))
+		console.log btc
+		rows = rows.filter((e)->e.code isnt 'BTC')
+		rows.push btc
 
 		rows = rows.map (e)->
 			h = e.historic

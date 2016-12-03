@@ -19,7 +19,7 @@ populateItems = ->
 			if $("##{coin}").length is 0
 				$('.items').append("<div class='item' id='#{coin}'></div>")
 			$('header .status .fa-refresh').addClass('active')
-			$.get "/status/#{coin}", (html)->
+			$.get "/status/#{coin}/true", (html)->
 				$("##{coin}").html html
 				$('header .status .fa-refresh').removeClass('active')
 		)(item)

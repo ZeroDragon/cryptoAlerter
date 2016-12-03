@@ -91,26 +91,66 @@ bot.onText /\/rate (.*)$|\/rate@CryptoAlerterBot (.*)$/i, (msg,match)->
 	brain.get "trend", {}, (err,d)->
 		d ?= {}
 		data = d.data.filter((e)-> e.code is search)[0]
-		crosses = d.data.filter((e)->cross.indexOf(e.code) isnt -1)
 		if !data?
 			message = "Not a valid rate code"
 		else
+			override = ['BETHSO','BITSO','VOLABIT']
+			cross = ['MXN','BTC']  if override.indexOf(data.code) isnt -1 and cross.length is 0
+			crosses = d.data.filter((e)->cross.indexOf(e.code) isnt -1)
 			message = """
-				*#{data.name}* _#{data.code}_ [chart](#{ownUrl}/status/#{data.code}/true)
+				<b>#{data.name}</b> <code>#{data.code}</code> <a href="http://cryptoalerter.tk/status/#{data.code}">[link]</a>
 			"""
 			if crosses.length is 0
-				message += """
-					\n*USD:* #{addCommas(data.usd)}
-					*BTC:* #{addCommas(data.btc)}
-				"""
+				message += "\n<b>USD</b> ≠ #{addCommas(data.usd)}"
+				if data.code isnt 'BTC'
+					message += "\n<b>BTC</b> ≠ #{addCommas(data.btc)}"
 			for crossItem in crosses
 				v = parseFloat((data.usd * (1 / crossItem.usd)).toFixed(8))
-				message += "\n*#{crossItem.code}:* #{addCommas(v)}"
-			if crosses.length is 0
-				message += "\n*Trend:* _#{data.status.trend}_"
-				message += "\n*Movement:* _#{data.status.movement}_"
-				message += "\n*Volatility:* _#{(data.status.size-100).toFixed(2)}%_"
-				message += "\n*Suggested Action:* _#{data.action}_"
+				message += "\n<b>#{crossItem.code}:</b> ≠ #{addCommas(v)}"
+			if crosses.length is 0 and !data.isNational
+				message += "<pre>Trend: #{data.status.trend}"
+				message += "\nMovement: #{data.status.movement}"
+				message += "\nVolatility: #{(data.status.size-100).toFixed(2)}%"
+				message += "\nIMHO: #{data.action}</pre>"
+		bot.sendMessage msg.chat.id, message, {parse_mode:"HTML"}
+bot.onText /\/local$|\/local@CryptoAlerterBot$/i, (msg,match)->
+	message = """
+		Usage:
+			*/local Country_Code*
+			To get the rate og BTC in the Country Code from localbitcoins.com
+			ej: `/local US`
+
+			*/local Country_Code[,Country_Code,Country_Code,...]*
+			To get the rate og BTC in several Country Codes from localbitcoins.com
+			ej: `/local US,MX,ES,CL`
+
+			Currently only `US`,`MX`,`ES` and `CL` country codes are supported
+			If you want me to add some more ask me @ZeroDragon
+	"""
+	bot.sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
+bot.onText /\/local (.*)$|\/local@CryptoAlerterBot (.*)$/i, (msg,match)->
+	matchArr = match[1].split(',')
+	brain.get "trend", {}, (err,d)->
+		d ?= {}
+		data = d.data.filter((e)->e.code is 'BTC')[0]
+		added = []
+		message = """
+			Currently only `US`,`MX`,`ES` and `CL` country codes are supported
+			If you want me to add some more ask me @ZeroDragon
+		"""
+		for tryed in matchArr
+			if data.localbitcoins[tryed.toLowerCase()]?
+				added.push util._extend({code:tryed.toUpperCase()},data.localbitcoins[tryed.toLowerCase()])
+		if added.length isnt 0
+			added = added.map (e)->
+				retval = """
+					*#{e.country}* `#{e.localCode}`:
+					Min: `#{e.coin}#{addCommas(e.min.toFixed(3))}`
+					Max: `#{e.coin}#{addCommas(e.max.toFixed(3))}`
+					Avg: `#{e.coin}#{addCommas(e.avr.toFixed(3))}`
+				"""
+				return retval
+			message = "localbitcoins.com BTC values for:\n"+added.join('\n')
 		bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
 
 bot.onText /\/activate (.*) untill (.*)$/, (msg,match)->

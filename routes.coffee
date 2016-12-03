@@ -4,7 +4,7 @@ alerts = CT_LoadController 'alerts'
 
 app.get '/', main.home
 # app.get '/status/:currency.json', status.value
-app.get '/status/:currency/:standAlone?', status.valueHTML
+app.get '/status/:currency/:inline?', status.valueHTML
 app.get '/chart/:currency', status.valueImage
 app.get '/trends', status.trends
 app.get '/alerts', alerts.main

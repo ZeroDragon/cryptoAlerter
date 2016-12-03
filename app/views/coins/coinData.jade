@@ -1,4 +1,4 @@
-if standAlone
+if !inline
 	link(rel="stylesheet",href="/styles/layout.css")
 	link(rel="stylesheet" href="/styles/coinData.css")
 	script(src="/scripts/jquery.js")
@@ -30,7 +30,7 @@ table(border="0",cellpadding="4",cellspacing="0").table
 	tr
 		td(colspan="7")
 			div(id="chart#{coin.code}")
-if !standAlone
+if inline
 	.botones
 		.cerrar(onclick="delItem('#{coin.code}');") x
 else
