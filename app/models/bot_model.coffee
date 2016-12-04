@@ -7,6 +7,14 @@ async = require 'async'
 crypto = CT_LoadModel 'crypto'
 fs = require 'fs'
 
+sendMessage= (id,message,opts)->
+	if Math.round(Math.random()*100) < 10
+		if opts?.parse_mode is 'HTML'
+			message += "\n\n<b>Support a mexican developer</b>\n <code>1NGMQWAUTmWndg15HZemNv7PvunT9QbP5z (BTC)</code>"
+		else if opts?.parse_mode is 'Markdown'
+			message += "\n\n*Support a mexican developer*\n `1NGMQWAUTmWndg15HZemNv7PvunT9QbP5z (BTC)`"
+	bot.sendMessage id, message, opts ?= {parse_mode : "Markdown"}
+
 bot.onText /\/start$|\/start@CryptoAlerterBot$/i, (msg)->
 	message = """
 		Welcome, @#{msg.from.username}
@@ -31,19 +39,18 @@ bot.onText /\/start$|\/start@CryptoAlerterBot$/i, (msg)->
 
 		Click [HERE](http://cryptoalerter.tk/trends) for a list of all possible rate codes
 
-		Having troubles? Contact me @ZeroDragon
-
-		Enjoy!
+		Having troubles, questions, ideas? Contact me @ZeroDragon
 	"""
-	bot.sendMessage msg.chat.id, message, {parse_mode : "Markdown"}
+	sendMessage msg.chat.id, message, {parse_mode : "Markdown"}
 
 bot.onText /\/convert$|\/convert@CryptoAlerterBot$/i,(msg,match)->
 	message = """
 		Usage:
 			*/convert AMMOUNT ORIGIN to DESTINATION*
 			ej: `/convert 5 BTC to ETH`
+
 	"""
-	bot.sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
+	sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
 
 bot.onText /\/convert (.*) (.*) to (.*)$|\/convert@CryptoAlerterBot (.*) (.*) to (.*)/, (msg,match)->
 	if match[1] is undefined and match[2] is undefined and match[3] is undefined
@@ -67,7 +74,7 @@ bot.onText /\/convert (.*) (.*) to (.*)$|\/convert@CryptoAlerterBot (.*) (.*) to
 				message = "coin(s) not found: #{cuales.join(',')}"
 		else
 			message = "uh?"
-		bot.sendMessage msg.chat.id, message
+		sendMessage msg.chat.id, message
 
 bot.onText /\/rate$|\/rate@CryptoAlerterBot$/i,(msg,match)->
 	message = """
@@ -80,7 +87,7 @@ bot.onText /\/rate$|\/rate@CryptoAlerterBot$/i,(msg,match)->
 			To get the requested coin rate in a converted coin
 			ej: `/rate BTC in MXN,COP,LTC,ETH`
 	"""
-	bot.sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
+	sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
 
 bot.onText /\/rate (.*)$|\/rate@CryptoAlerterBot (.*)$/i, (msg,match)->
 	match[1] = match[2] if !match[1]?
@@ -116,7 +123,7 @@ bot.onText /\/rate (.*)$|\/rate@CryptoAlerterBot (.*)$/i, (msg,match)->
 				message += "\nMovement: #{data.status.movement}"
 				message += "\nVolatility: #{(data.status.size-100).toFixed(2)}%"
 				message += "\nIMHO: #{data.action}</pre>"
-		bot.sendMessage msg.chat.id, message, {parse_mode:"HTML"}
+		sendMessage msg.chat.id, message, {parse_mode:"HTML"}
 bot.onText /\/local$|\/local@CryptoAlerterBot$/i, (msg,match)->
 	message = """
 		Usage:
@@ -129,9 +136,8 @@ bot.onText /\/local$|\/local@CryptoAlerterBot$/i, (msg,match)->
 			ej: `/local US,MX,ES,CL`
 
 			Currently only `US`,`MX`,`ES` and `CL` country codes are supported
-			If you want me to add some more ask me @ZeroDragon
 	"""
-	bot.sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
+	sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
 bot.onText /\/local (.*)$|\/local@CryptoAlerterBot (.*)$/i, (msg,match)->
 	match[1] = match[2] if !match[1]?
 	matchArr = match[1].split(',')
@@ -141,7 +147,6 @@ bot.onText /\/local (.*)$|\/local@CryptoAlerterBot (.*)$/i, (msg,match)->
 		added = []
 		message = """
 			Currently only `US`,`MX`,`ES` and `CL` country codes are supported
-			If you want me to add some more ask me @ZeroDragon
 		"""
 		for tryed in matchArr
 			if data.localbitcoins[tryed.toLowerCase()]?
@@ -156,7 +161,7 @@ bot.onText /\/local (.*)$|\/local@CryptoAlerterBot (.*)$/i, (msg,match)->
 				"""
 				return retval
 			message = "localbitcoins.com BTC values for:\n"+added.join('\n')
-		bot.sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
+		sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
 
 bot.onText /\/activate (.*) untill (.*)$/, (msg,match)->
 	return if msg.from.id isnt config.telegramAdmin
@@ -167,17 +172,17 @@ bot.onText /\/activate (.*) untill (.*)$/, (msg,match)->
 			d.active = true
 			d.expiration = ~~(untill.getTime()/1000)
 			brain.set "userAlerts", d
-			bot.sendMessage config.telegramAdmin, "#{match[1]} activated untill #{match[2]}"
-			bot.sendMessage d.id, "#{match[1]}, your account has been activated untill #{match[2]}"
+			sendMessage config.telegramAdmin, "#{match[1]} activated untill #{match[2]}"
+			sendMessage d.id, "#{match[1]}, your account has been activated untill #{match[2]}"
 		else
-			bot.sendMessage config.telegramAdmin, "#{match[1]} user not found"
+			sendMessage config.telegramAdmin, "#{match[1]} user not found"
 
 bot.onText /\/unlimited$/, (msg)->
 	callback = "http://cryptoalerter.tk/unlimited?username=#{msg.from.username}&userid=#{msg.from.id}"
 	url = "https://api.blockchain.info/v2/receive?xpub=#{config.blockchain.xPub}&key=#{config.blockchain.API}&callback=#{encodeURIComponent(callback)}"
 	request.get url, (err,res,body)->
 		body = JSON.parse body
-		bot.sendMessage msg.from.id, "Ok, now just send 0.005 BTC to #{body.address}"
+		sendMessage msg.from.id, "Ok, now just send 0.005 BTC to #{body.address}"
 
 confirmed = (username,userid)->
 	_deleteConfirmation = ->
@@ -201,10 +206,10 @@ bot.onText /\/confirm (.*)$/, (msg,match)->
 	brain.get "confirmations", {username:msg.from.username}, (err,d)->
 		d ?= {}
 		if d.code is code
-			bot.sendMessage msg.from.id, "Authorized!"
+			sendMessage msg.from.id, "Authorized!"
 			confirmed(msg.from.username,msg.from.id)
 		else
-			bot.sendMessage msg.from.id, "Code not recognized"
+			sendMessage msg.from.id, "Code not recognized"
 
 exports.gotPayment = (query,cb)->
 	message = ["Got payment"]
@@ -212,7 +217,7 @@ exports.gotPayment = (query,cb)->
 	for own k,v of query
 		message.push "*#{k}:* #{v}"
 	message = message.join('\n')
-	bot.sendMessage config.telegramAdmin, message, {parse_mode:"Markdown"}
+	sendMessage config.telegramAdmin, message, {parse_mode:"Markdown"}
 	cb true
 
 exports.triggerAlerts = (type,cb)->
@@ -237,7 +242,7 @@ exports.triggerAlerts = (type,cb)->
 			message.push coins.join('\n-----------\n')
 			message = message.join('\n')
 			# console.log message
-			bot.sendMessage task.userid, message, {parse_mode:"Markdown"}
+			sendMessage task.userid, message, {parse_mode:"Markdown"}
 
 	async.parallel(
 		{
