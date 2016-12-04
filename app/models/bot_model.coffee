@@ -112,7 +112,7 @@ bot.onText /\/rate (.*)$|\/rate@CryptoAlerterBot (.*)$/i, (msg,match)->
 				v = parseFloat((data.usd * (1 / crossItem.usd)).toFixed(8))
 				message += "\n<b>#{crossItem.code}:</b> ≠ #{addCommas(v)}"
 			if crosses.length is 0 and !data.isNational
-				message += "<pre>Trend: #{data.status.trend}"
+				message += "\n<pre>Trend: #{data.status.trend}"
 				message += "\nMovement: #{data.status.movement}"
 				message += "\nVolatility: #{(data.status.size-100).toFixed(2)}%"
 				message += "\nIMHO: #{data.action}</pre>"
