@@ -10,8 +10,7 @@ fs = require 'fs'
 sendMessage= (id,message,opts)->
 	bot.sendMessage(id, message, opts ?= {parse_mode : "Markdown"}).then ->
 		if Math.round(Math.random()*100) < 10
-			bot.sendMessage(id, "*Do you ❤ this bot? Buy me a coffee BTC:*", {parse_mode : "Markdown"}).then ->
-				bot.sendMessage id, "`1NGMQWAUTmWndg15HZemNv7PvunT9QbP5z`", {parse_mode : "Markdown"}
+			bot.sendMessage(id, "*Do you ❤ this bot? Buy me a coffee BTC:*\n`1NGMQWAUTmWndg15HZemNv7PvunT9QbP5z`", {parse_mode : "Markdown"}).then ->
 
 bot.onText /\/start$|\/start@CryptoAlerterBot$/i, (msg)->
 	message = """
