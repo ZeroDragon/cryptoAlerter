@@ -8,12 +8,10 @@ crypto = CT_LoadModel 'crypto'
 fs = require 'fs'
 
 sendMessage= (id,message,opts)->
-	if Math.round(Math.random()*100) < 10
-		if opts?.parse_mode is 'HTML'
-			message += "\n\n<b>Support a mexican developer</b>\n <code>1NGMQWAUTmWndg15HZemNv7PvunT9QbP5z (BTC)</code>"
-		else if opts?.parse_mode is 'Markdown'
-			message += "\n\n*Support a mexican developer*\n `1NGMQWAUTmWndg15HZemNv7PvunT9QbP5z (BTC)`"
-	bot.sendMessage id, message, opts ?= {parse_mode : "Markdown"}
+	bot.sendMessage(id, message, opts ?= {parse_mode : "Markdown"}).then ->
+		if Math.round(Math.random()*100) < 10
+			bot.sendMessage(id, "*Do you ❤ this bot? Buy me a coffee BTC:*", {parse_mode : "Markdown"}).then ->
+				bot.sendMessage id, "`1NGMQWAUTmWndg15HZemNv7PvunT9QbP5z`", {parse_mode : "Markdown"}
 
 bot.onText /\/start$|\/start@CryptoAlerterBot$/i, (msg)->
 	message = """
