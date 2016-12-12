@@ -49,6 +49,53 @@ bot.onText /\/convert$|\/convert@CryptoAlerterBot$/i,(msg,match)->
 	"""
 	sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
 
+
+getChart = (match,cb)->
+	brain.get "storage", {}, (err,d)->
+		chartData = d.coins[match]
+		if !chartData?
+			cb true
+		values = []
+		min = max = 0
+		keys = Object.keys(chartData)
+		fecha = (d)->
+			aZ = (i)-> "0#{i}".slice(-2)
+			m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+			return "#{m[d.getMonth()]}/#{aZ(d.getDate())}@#{aZ(d.getHours())}:#{aZ(d.getMinutes())}"
+		[date1,date2] = [keys[0],keys[keys.length-1]].map (e)-> fecha(new Date(e*1000))
+		min = chartData[Object.keys(chartData)[0]]
+
+		for k,v of chartData
+			values.push v
+			min = Math.min min,v
+			max = Math.max max,v
+		last = "$#{values[values.length-1].toFixed(5)}"
+		min = min - ((max-min) * 10 / 100)
+		max = max + ((max-min) * 10 / 100)
+		middle = (max + min) / 2
+		min = min.toFixed(5)
+		max = max.toFixed(5)
+		middle = middle.toFixed(5)
+
+		scaleBetween = (unscaled,minAllowed,maxAllowed,min,max)->
+			(maxAllowed - minAllowed) * (unscaled - min) / (max-min) + minAllowed
+
+		values = values.map (e)-> scaleBetween e, 0, 100, min, max
+
+		cb null, """
+			https://chart.googleapis.com/chart?chxt=x,y&chxl=0:|#{date1}|#{date2}|1:|$#{min}|$#{middle}|$#{max}&cht=ls&chd=t:#{values.join(',')}&chco=0000FF&chls=2.0&chs=600x200&chdl=#{match}&chdlp=t&chg=10,20&chm=t#{last},000000,0,-1:-1:1,11
+		"""
+
+bot.onText /\/chart (.*)$|\/chart@CryptoAlerterBot (.*)$/, (msg,match)->
+	match[1] = match[2] if !match[1]?
+	match[1] = match[1].toUpperCase()
+	getChart match[1],(err,url)->
+		if err
+			sendMessage msg.chat.id, "Not a valid rate code"
+		else
+			bot.sendPhoto msg.chat.id, url
+	
+
 bot.onText /\/convert (.*) (.*) to (.*)$|\/convert@CryptoAlerterBot (.*) (.*) to (.*)/, (msg,match)->
 	if match[1] is undefined and match[2] is undefined and match[3] is undefined
 		match[1] = match[4]
