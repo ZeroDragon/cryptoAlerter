@@ -40,15 +40,6 @@ bot.onText /\/start$|\/start@CryptoAlerterBot$/i, (msg)->
 	"""
 	sendMessage msg.chat.id, message, {parse_mode : "Markdown"}
 
-bot.onText /\/convert$|\/convert@CryptoAlerterBot$/i,(msg,match)->
-	message = """
-		Usage:
-			*/convert AMMOUNT ORIGIN to DESTINATION*
-			ej: `/convert 5 BTC to ETH`
-
-	"""
-	sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
-
 
 getChart = (match,cb)->
 	brain.get "storage", {}, (err,d)->
@@ -86,6 +77,15 @@ getChart = (match,cb)->
 			https://chart.googleapis.com/chart?chxt=x,y&chxl=0:|#{date1}|#{date2}|1:|$#{min}|$#{middle}|$#{max}&cht=ls&chd=t:#{values.join(',')}&chco=0000FF&chls=2.0&chs=600x200&chdl=#{match}&chdlp=t&chg=10,20&chm=t#{last},000000,0,-1:-1:1,11
 		"""
 
+bot.onText /\/chart$|\/chart@CryptoAlerterBot$/, (msg,match)->
+	message = """
+		Usage:
+			*/chart CODE*
+			ej: `/chart BTC`
+
+	"""
+	sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
+
 bot.onText /\/chart (.*)$|\/chart@CryptoAlerterBot (.*)$/, (msg,match)->
 	match[1] = match[2] if !match[1]?
 	match[1] = match[1].toUpperCase()
@@ -95,6 +95,14 @@ bot.onText /\/chart (.*)$|\/chart@CryptoAlerterBot (.*)$/, (msg,match)->
 		else
 			bot.sendPhoto msg.chat.id, url
 	
+bot.onText /\/convert$|\/convert@CryptoAlerterBot$/i,(msg,match)->
+	message = """
+		Usage:
+			*/convert AMMOUNT ORIGIN to DESTINATION*
+			ej: `/convert 5 BTC to ETH`
+
+	"""
+	sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
 
 bot.onText /\/convert (.*) (.*) to (.*)$|\/convert@CryptoAlerterBot (.*) (.*) to (.*)/, (msg,match)->
 	if match[1] is undefined and match[2] is undefined and match[3] is undefined
