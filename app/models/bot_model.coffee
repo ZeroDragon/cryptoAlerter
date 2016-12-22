@@ -48,7 +48,10 @@ getChart = (match,cb)->
 			cb true
 		values = []
 		min = max = 0
-		keys = Object.keys(chartData)
+		try
+			keys = Object.keys(chartData)
+		catch
+			keys = []
 		fecha = (d)->
 			aZ = (i)-> "0#{i}".slice(-2)
 			m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
@@ -94,7 +97,7 @@ bot.onText /\/chart (.*)$|\/chart@CryptoAlerterBot (.*)$/, (msg,match)->
 			sendMessage msg.chat.id, "Not a valid rate code"
 		else
 			bot.sendPhoto msg.chat.id, url
-	
+
 bot.onText /\/convert$|\/convert@CryptoAlerterBot$/i,(msg,match)->
 	message = """
 		Usage:
@@ -286,7 +289,7 @@ exports.triggerAlerts = (type,cb)->
 				delete alert.code
 
 				coinMessage = ["*#{task.name}* _#{task.code}_"]
-				
+
 				for own k,v of alert
 					coinMessage.push "#{k}: #{v}"
 
