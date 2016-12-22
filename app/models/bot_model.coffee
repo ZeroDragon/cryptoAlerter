@@ -46,12 +46,14 @@ getChart = (match,cb)->
 		chartData = d.coins[match]
 		if !chartData?
 			cb true
+			return
 		values = []
 		min = max = 0
 		try
 			keys = Object.keys(chartData)
 		catch
-			keys = []
+			cb true
+			return
 		fecha = (d)->
 			aZ = (i)-> "0#{i}".slice(-2)
 			m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
