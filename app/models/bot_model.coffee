@@ -357,64 +357,85 @@ exports.sendTweet = ->
 	Twitter = require 'twitter'
 	client = new Twitter config.twitterTokens
 
-	async.parallel {
-		imageData : (callback)->
-			getChart "BTC",(err,url)->
+	imageData = (code,callback)->
+		getChart code,(err,url)->
+			if err
+				callback err
+				return
+			request.get url, { encoding: null },(err,data,body)->
 				if err
 					callback err
 					return
-				request.get url, { encoding: null },(err,data,body)->
-					if err
-						callback err
-						return
-					body = new Buffer(body).toString('base64')
-					callback null,body
+				body = new Buffer(body).toString('base64')
+				callback null,body
+
+	sendTweet = (coin,imageData,getRate,cb=->)->
+		client.post 'media/upload', {media_data: imageData}, (err,media,response)->
+			if err
+				console.log media
+				return
+			text = """
+				#{coin} ahora:
+				$#{addCommas(getRate.usd.toFixed(2))} USD
+				€#{addCommas(getRate.eur.toFixed(2))} EUR
+				$#{addCommas(getRate.mxn.toFixed(2))} MXN
+			"""
+			if getRate.bitso
+				text += """
+
+					BITSO $#{addCommas(getRate.bitso.toFixed(2))} MXN
+					VOLABIT $#{addCommas(getRate.volabit.toFixed(2))} MXN
+				"""
+
+			status =
+				status : text
+				media_ids : media.media_id_string
+
+			# console.log status
+			# cb()
+			# return
+
+			client.post 'statuses/update', status, (err,tweet,response)->
+				cb()
+			return
+		return
+
+	async.parallel {
+		imageBTCData : (callback)-> imageData 'BTC', callback
+		imageDASHData : (callback)-> imageData 'DASH', callback
 		getRate : (callback)->
 			brain.get "trend", {}, (err,d)->
 				if err
 					callback err
 					return
-				d ?= {}
+
 				btc = d.data.filter((e)-> e.code is "BTC")[0]
-
-				if !btc?
-					callback "Error: did not get rate"
-					return
-
+				dash = d.data.filter((e)-> e.code is "DASH")[0]
 				bitso = d.data.filter((e)-> e.code is "BITSO")[0]
 				volabit = d.data.filter((e)-> e.code is "VOLABIT")[0]
 				euro = d.data.filter((e)-> e.code is "EUR")[0]
 				mxn = d.data.filter((e)-> e.code is "MXN")[0]
 
 				callback null, {
-					usd : btc.usd
-					eur : parseFloat((btc.usd * (1 / euro.usd)).toFixed(8))
-					mxn : parseFloat((btc.usd * (1 / mxn.usd)).toFixed(8))
-					bitso : parseFloat((bitso.usd * (1 / mxn.usd)).toFixed(8))
-					volabit : parseFloat((volabit.usd * (1 / mxn.usd)).toFixed(8))
+					btc : {
+						usd : btc.usd
+						eur : parseFloat((btc.usd * (1 / euro.usd)).toFixed(8))
+						mxn : parseFloat((btc.usd * (1 / mxn.usd)).toFixed(8))
+						bitso : parseFloat((bitso.usd * (1 / mxn.usd)).toFixed(8))
+						volabit : parseFloat((volabit.usd * (1 / mxn.usd)).toFixed(8))
+					}
+					dash : {
+						usd : dash.usd
+						eur : parseFloat((dash.usd * (1 / euro.usd)).toFixed(8))
+						mxn : parseFloat((dash.usd * (1 / mxn.usd)).toFixed(8))
+					}
 				}
-				
-	},(err,{imageData,getRate})->
+
+	},(err,{imageBTCData,imageDASHData,getRate})->
 		if err
 			console.log err
 			return
-		client.post 'media/upload', {media_data: imageData}, (err,media,response)->
-			if err
-				console.log media
-				return
-			text = """
-				Bitcoin ahora:
-				$#{addCommas(getRate.usd.toFixed(2))} USD
-				€#{addCommas(getRate.eur.toFixed(2))} EUR
-				$#{addCommas(getRate.mxn.toFixed(2))} MXN
-				BITSO $#{addCommas(getRate.bitso.toFixed(2))} MXN
-				VOLABIT $#{addCommas(getRate.volabit.toFixed(2))} MXN
-			"""
-			status =
-				status : text
-				media_ids : media.media_id_string
-
-			client.post 'statuses/update', status, (err,tweet,response)->
-				return
+		sendTweet 'BITCOIN',imageBTCData,getRate.btc, ->
+			sendTweet 'DASH',imageDASHData, getRate.dash
 			return
 		return
