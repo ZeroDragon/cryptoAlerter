@@ -21,6 +21,7 @@
     "mongodb": "1.4.31",
     "node-telegram-bot-api": "^0.20.1",
     "phantom": "^0.8.4",
-    "request": "^2.69.0"
+    "request": "^2.69.0",
+    "twitter": "^1.7.0"
   }
 }

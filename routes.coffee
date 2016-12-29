@@ -9,6 +9,7 @@ app.get '/chart/:currency', status.valueImage
 app.get '/trends', status.trends
 app.get '/alerts', alerts.main
 app.get '/unlimited', alerts.unlimited
+app.get '/sendTweet', alerts.sendTweet
 
 app.post '/bot/askForConfirmation', alerts.askForConfirmation
 app.post '/bot/isItConfirmed', alerts.isItConfirmed

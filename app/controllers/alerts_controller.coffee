@@ -78,3 +78,7 @@ exports.unlimited = (req,res)->
 	if ~~req.query.confirmations >= 3
 		botModel.gotPayment req.query, ->
 			res.send '*ok*'
+
+exports.sendTweet = (req,res)->
+	botModel.sendTweet()
+	res.sendStatus 200

@@ -351,3 +351,47 @@ exports.triggerAlerts = (type,cb)->
 			sendMessages groupByUsers
 	)
 	cb true
+
+exports.sendTweet = ->
+	return unless config.twitterTokens?
+	Twitter = require 'twitter'
+	client = new Twitter config.twitterTokens
+
+	async.parallel {
+		imageData : (callback)->
+			getChart "BTC",(err,url)->
+				if err
+					callback err
+					return
+				request.get url, { encoding: null },(err,data,body)->
+					if err
+						callback err
+						return
+					body = new Buffer(body).toString('base64')
+					callback null,body
+		getRate : (callback)->
+			brain.get "trend", {}, (err,d)->
+				if err
+					callback err
+					return
+				d ?= {}
+				data = d.data.filter((e)-> e.code is "BTC")[0]
+				if !data?
+					callback "Error: did not get rate"
+					return
+				callback null,addCommas(data.usd)
+	},(err,{imageData,getRate})->
+		if err
+			console.log err
+			return
+		client.post 'media/upload', {media_data: imageData}, (err,media,response)->
+			if err
+				console.log media
+				return
+			status =
+				status : "Valor del Bitcoin ahora: $#{getRate} USD"
+				media_ids : media.media_id_string
+			client.post 'statuses/update', status, (err,tweet,response)->
+				return
+			return
+		return
