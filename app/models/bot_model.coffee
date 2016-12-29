@@ -375,11 +375,25 @@ exports.sendTweet = ->
 					callback err
 					return
 				d ?= {}
-				data = d.data.filter((e)-> e.code is "BTC")[0]
-				if !data?
+				btc = d.data.filter((e)-> e.code is "BTC")[0]
+
+				if !btc?
 					callback "Error: did not get rate"
 					return
-				callback null,addCommas(data.usd)
+
+				bitso = d.data.filter((e)-> e.code is "BITSO")[0]
+				volabit = d.data.filter((e)-> e.code is "VOLABIT")[0]
+				euro = d.data.filter((e)-> e.code is "EUR")[0]
+				mxn = d.data.filter((e)-> e.code is "MXN")[0]
+
+				callback null, {
+					usd : btc.usd
+					eur : parseFloat((btc.usd * (1 / euro.usd)).toFixed(8))
+					mxn : parseFloat((btc.usd * (1 / mxn.usd)).toFixed(8))
+					bitso : parseFloat((bitso.usd * (1 / mxn.usd)).toFixed(8))
+					volabit : parseFloat((volabit.usd * (1 / mxn.usd)).toFixed(8))
+				}
+				
 	},(err,{imageData,getRate})->
 		if err
 			console.log err
@@ -388,9 +402,18 @@ exports.sendTweet = ->
 			if err
 				console.log media
 				return
+			text = """
+				Bitcoin ahora:
+				$#{addCommas(getRate.usd.toFixed(2))} USD
+				€#{addCommas(getRate.eur.toFixed(2))} EUR
+				$#{addCommas(getRate.mxn.toFixed(2))} MXN
+				BITSO $#{addCommas(getRate.bitso.toFixed(2))} MXN
+				VOLABIT $#{addCommas(getRate.volabit.toFixed(2))} MXN
+			"""
 			status =
-				status : "Valor del Bitcoin ahora: $#{getRate} USD"
+				status : text
 				media_ids : media.media_id_string
+
 			client.post 'statuses/update', status, (err,tweet,response)->
 				return
 			return
