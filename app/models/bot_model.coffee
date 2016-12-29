@@ -375,7 +375,7 @@ exports.sendTweet = ->
 				console.log media
 				return
 			text = """
-				#{coin} ahora:
+				##{coin} ahora:
 				$#{addCommas(getRate.usd.toFixed(2))} USD
 				€#{addCommas(getRate.eur.toFixed(2))} EUR
 				$#{addCommas(getRate.mxn.toFixed(2))} MXN
@@ -383,8 +383,8 @@ exports.sendTweet = ->
 			if getRate.bitso
 				text += """
 
-					BITSO $#{addCommas(getRate.bitso.toFixed(2))} MXN
-					VOLABIT $#{addCommas(getRate.volabit.toFixed(2))} MXN
+					@Bitso $#{addCommas(getRate.bitso.toFixed(2))} MXN
+					@Volabit $#{addCommas(getRate.volabit.toFixed(2))} MXN
 				"""
 
 			status =
