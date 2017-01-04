@@ -13,10 +13,12 @@ exports.value = (req,res)->
 		mxn = rates.filter((e)-> e.code is 'MXN')[0]
 		coin.mxn = parseFloat((coin.usd * (1 / mxn.usd)).toFixed(2))
 		obj = {}
+		if req.query.btc?
+			obj[req.query.btc] = "#{coin.btc}"
 		if req.query.usd?
-			obj[req.query.usd] = "$#{addCommas(coin.usd)}"
+			obj[req.query.usd] = "$#{coin.usd.toFixed(2)}"
 		if req.query.mxn?
-			obj[req.query.mxn] = "$#{addCommas(coin.mxn)}"
+			obj[req.query.mxn] = "$#{coin.mxn.toFixed(2)}"
 		if req.query.h?
 			obj[req.query.h] = "#{coin.historic.h}%"
 		if req.query.d?
