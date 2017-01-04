@@ -66,17 +66,25 @@ _elData = (cb)->
 					"mxn" : parseFloat(body.ask)
 					historic : {h:0,d:0,w:0}
 				})
+		bitso : (callback)->
+			request.get "https://bitso.com/api/v2/ticker?book=btc_mxn",{json:true},(err,data,body)->
+				callback(null,{
+					"name":"Bitso BTC"
+					"code":"BITSO"
+					"mxn" : parseFloat(body.ask)
+					historic : {h:0,d:0,w:0}
+				})
 		locals : (callback)->
 			request.get 'http://coinmonitor.com.mx/data_mx.json', {json:true}, (err,response,body)->
 				bitso = body.BITSO_buy.replace(/,/g,'')
 				volabit = body.VOLABIT_buy.replace(/,/g,'')
 				callback(null,{
-					bitso : {
-						"name":"Bitso BTC"
-						"code":"BITSO"
-						"mxn" : parseFloat(bitso)
-						historic : {h:0,d:0,w:0}
-					},
+					# bitso : {
+					# 	"name":"Bitso BTC"
+					# 	"code":"BITSO"
+					# 	"mxn" : parseFloat(bitso)
+					# 	historic : {h:0,d:0,w:0}
+					# },
 					volabit : {
 						"name":"Volabit BTC"
 						"code":"VOLABIT"
@@ -105,7 +113,7 @@ _elData = (cb)->
 		rows = data.crypto
 		rows = rows.concat data.official
 		bethso = data.bETHso
-		bitso = data.locals.bitso
+		bitso = data.bitso
 		volabit = data.locals.volabit
 
 		money = rows.filter((e)->e.code is '$$$')[0]
