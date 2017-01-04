@@ -1,16 +1,29 @@
 crypto = CT_LoadModel 'crypto'
 phantom = require 'phantom'
+queryString = require 'querystring'
 exports.value = (req,res)->
 	crypto.getRates (rates)->
-		if req.params.currency is 'allCoins'
-			res.json rates
-		else
-			requested = req.params.currency.toUpperCase().split(',')
-			coins = rates.filter (e)-> requested.indexOf(e.code) isnt -1
-			if coins.length > 0
-				res.json coins
-			else
-				res.sendStatus 404
+		if !req.params.currency?
+			res.sendStatus 404
+			return
+		coin = rates.filter((e)-> e.code is req.params.currency.toUpperCase())[0]
+		if !coin?
+			res.sendStatus 404
+			return
+		mxn = rates.filter((e)-> e.code is 'MXN')[0]
+		coin.mxn = parseFloat((coin.usd * (1 / mxn.usd)).toFixed(2))
+		obj = {}
+		if req.query.usd?
+			obj[req.query.usd] = "$#{addCommas(coin.usd)}"
+		if req.query.mxn?
+			obj[req.query.mxn] = "$#{addCommas(coin.mxn)}"
+		if req.query.h?
+			obj[req.query.h] = "#{coin.historic.h}%"
+		if req.query.d?
+			obj[req.query.d] = "#{coin.historic.d}%"
+		if req.query.w?
+			obj[req.query.w] = "#{coin.historic.w}%"
+		res.json obj
 
 exports.valueHTML = (req,res)->
 	crypto.getRates (rates)->
