@@ -196,29 +196,30 @@ bot.onText /\/local$|\/local@CryptoAlerterBot$/i, (msg,match)->
 	"""
 	sendMessage msg.chat.id, message,{parse_mode:"Markdown"}
 bot.onText /\/local (.*)$|\/local@CryptoAlerterBot (.*)$/i, (msg,match)->
-	match[1] = match[2] if !match[1]?
-	matchArr = match[1].split(',')
-	brain.get "trend", {}, (err,d)->
-		d ?= {}
-		data = d.data.filter((e)->e.code is 'BTC')[0]
-		added = []
-		message = """
-			Currently only `US`,`MX`,`ES` and `CL` country codes are supported
-		"""
-		for tryed in matchArr
-			if data.localbitcoins[tryed.toLowerCase()]?
-				added.push util._extend({code:tryed.toUpperCase()},data.localbitcoins[tryed.toLowerCase()])
-		if added.length isnt 0
-			added = added.map (e)->
-				retval = """
-					*#{e.country}* `#{e.localCode}`:
-					Min: `#{e.coin}#{addCommas(e.min.toFixed(3))}`
-					Max: `#{e.coin}#{addCommas(e.max.toFixed(3))}`
-					Avg: `#{e.coin}#{addCommas(e.avr.toFixed(3))}`
-				"""
-				return retval
-			message = "localbitcoins.com BTC values for:\n"+added.join('\n')
-		sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
+	sendMessage msg.chat.id, "This command has been temporary disabled :(", {parse_mode:"Markdown"}
+	# match[1] = match[2] if !match[1]?
+	# matchArr = match[1].split(',')
+	# brain.get "trend", {}, (err,d)->
+	# 	d ?= {}
+	# 	data = d.data.filter((e)->e.code is 'BTC')[0]
+	# 	added = []
+	# 	message = """
+	# 		Currently only `US`,`MX`,`ES` and `CL` country codes are supported
+	# 	"""
+	# 	for tryed in matchArr
+	# 		if data.localbitcoins[tryed.toLowerCase()]?
+	# 			added.push util._extend({code:tryed.toUpperCase()},data.localbitcoins[tryed.toLowerCase()])
+	# 	if added.length isnt 0
+	# 		added = added.map (e)->
+	# 			retval = """
+	# 				*#{e.country}* `#{e.localCode}`:
+	# 				Min: `#{e.coin}#{addCommas(e.min.toFixed(3))}`
+	# 				Max: `#{e.coin}#{addCommas(e.max.toFixed(3))}`
+	# 				Avg: `#{e.coin}#{addCommas(e.avr.toFixed(3))}`
+	# 			"""
+	# 			return retval
+	# 		message = "localbitcoins.com BTC values for:\n"+added.join('\n')
+	# 	sendMessage msg.chat.id, message, {parse_mode:"Markdown"}
 
 bot.onText /\/activate (.*) untill (.*)$/, (msg,match)->
 	return if msg.from.id isnt config.telegramAdmin

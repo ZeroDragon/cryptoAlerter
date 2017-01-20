@@ -8,7 +8,9 @@ working = false
 _elData = (cb)->
 	async.parallel({
 		crypto : (callback)->
+			console.log "[🙏] coinmarketcap"
 			request.get 'http://coinmarketcap.com/all/views/all/', (err,response,body)->
+				console.log "[💪] coinmarketcap"
 				throw err if err
 				$ = cheerio.load body
 				rs = $('#currencies-all tbody tr')
@@ -31,7 +33,9 @@ _elData = (cb)->
 					rows.push obj
 				callback(null,rows)
 		official : (callback)->
+			console.log "[🙏] coinmill"
 			request.get 'http://coinmill.com/frame.js', (err,data,body)->
+				console.log "[💪] coinmill"
 				currencyData = body.split(';')[0].replace('var currency_data=','')
 				currency_convert = (d,c)->
 					currency_sdrPer = {}
@@ -58,8 +62,22 @@ _elData = (cb)->
 						isNational : true
 					}
 				callback null, r
+		bsf : (callback)->
+			console.log "[🙏] dolartoday"
+			request.get 'https://7d41da3956ddtztyo.wolrdssl.net/custom/rate.js', (err,data,body)->
+				console.log "[💪] dolartoday"
+				body = JSON.parse(body.replace('var dolartoday =',''))
+				callback null, {
+					name : "Bolivar Cucuta Transfer"
+					code : "BSF"
+					usd : 1/body.USD.transfer_cucuta
+					historic: {h:0,d:0,w:0}
+					isNational : true
+				}
 		bETHso : (callback)->
+			console.log "[🙏] bitso (eth)"
 			request.get "https://bitso.com/api/v2/ticker?book=eth_mxn",{json:true},(err,data,body)->
+				console.log "[💪] bitso (eth)"
 				callback(null,{
 					"name":"Bitso ETH"
 					"code":"BETHSO"
@@ -67,7 +85,9 @@ _elData = (cb)->
 					historic : {h:0,d:0,w:0}
 				})
 		bitso : (callback)->
+			console.log "[🙏] bitso (btc)"
 			request.get "https://bitso.com/api/v2/ticker?book=btc_mxn",{json:true},(err,data,body)->
+				console.log "[💪] bitso (btc)"
 				callback(null,{
 					"name":"Bitso BTC"
 					"code":"BITSO"
@@ -75,16 +95,12 @@ _elData = (cb)->
 					historic : {h:0,d:0,w:0}
 				})
 		locals : (callback)->
+			console.log "[🙏] coinmonitor"
 			request.get 'http://coinmonitor.com.mx/data_mx.json', {json:true}, (err,response,body)->
+				console.log "[💪] coinmonitor"
 				bitso = body.BITSO_buy.replace(/,/g,'')
 				volabit = body.VOLABIT_buy.replace(/,/g,'')
 				callback(null,{
-					# bitso : {
-					# 	"name":"Bitso BTC"
-					# 	"code":"BITSO"
-					# 	"mxn" : parseFloat(bitso)
-					# 	historic : {h:0,d:0,w:0}
-					# },
 					volabit : {
 						"name":"Volabit BTC"
 						"code":"VOLABIT"
@@ -92,29 +108,32 @@ _elData = (cb)->
 						historic : {h:0,d:0,w:0}
 					}
 				})
-		localbitcoins : (callback)->
-			fn = (code,name,coin,localCode,fncb)->
-				request.get "https://localbitcoins.com/buy-bitcoins-online/#{code}/true/.json", {json:true}, (err,response,body)->
-					min = max = body.data.ad_list[0].data.temp_price_usd
-					avr = 0
-					for itm in body.data.ad_list
-						min = Math.min(min,parseFloat(itm.data.temp_price_usd))
-						max = Math.max(max,parseFloat(itm.data.temp_price_usd))
-						avr += parseFloat(itm.data.temp_price_usd)
-					avr = avr / body.data.ad_list.length
-					fncb null, {min:min,max:max,avr:avr,country:name,coin:coin,localCode:localCode}
-			async.parallel {
-				us : (icb)-> fn 'us','United States', '$', 'USD',icb
-				mx : (icb)-> fn 'mx', 'México', '$', 'MXN', icb
-				es : (icb)-> fn 'es', 'España', '€', 'EUR', icb
-				cl : (icb)-> fn 'cl', 'Chile', '$', 'CLP', icb
-			},callback
+		# localbitcoins : (callback)->
+		# 	fn = (code,name,coin,localCode,fncb)->
+		# 		console.log "[🙏] localbitcoins (#{localCode})"
+		# 		request.get "https://localbitcoins.com/buy-bitcoins-online/#{code}/true/.json", {json:true}, (err,response,body)->
+		# 			console.log "[💪] localbitcoins (#{localCode})"
+		# 			min = max = body.data.ad_list[0].data.temp_price_usd
+		# 			avr = 0
+		# 			for itm in body.data.ad_list
+		# 				min = Math.min(min,parseFloat(itm.data.temp_price_usd))
+		# 				max = Math.max(max,parseFloat(itm.data.temp_price_usd))
+		# 				avr += parseFloat(itm.data.temp_price_usd)
+		# 			avr = avr / body.data.ad_list.length
+		# 			fncb null, {min:min,max:max,avr:avr,country:name,coin:coin,localCode:localCode}
+		# 	async.series {
+		# 		us : (icb)-> fn 'us','United States', '$', 'USD',icb
+		# 		mx : (icb)-> fn 'mx', 'México', '$', 'MXN', icb
+		# 		es : (icb)-> fn 'es', 'España', '€', 'EUR', icb
+		# 		cl : (icb)-> fn 'cl', 'Chile', '$', 'CLP', icb
+		# 	},callback
 	},(err,data)->
 		rows = data.crypto
 		rows = rows.concat data.official
 		bethso = data.bETHso
 		bitso = data.bitso
 		volabit = data.locals.volabit
+		bsf = data.bsf
 
 		money = rows.filter((e)->e.code is '$$$')[0]
 		if money?
@@ -130,16 +149,17 @@ _elData = (cb)->
 		rows.push bethso
 		rows.push volabit
 		rows.push bitso
+		rows.push bsf
 
 
-		btc.localbitcoins = data.localbitcoins
-		for cc, lbtc of btc.localbitcoins
-			cc = rows.filter((e)->e.code is lbtc.localCode)[0]
-			lbtc.min = parseFloat((lbtc.min * (1 / cc.usd)).toFixed(8))
-			lbtc.max = parseFloat((lbtc.max * (1 / cc.usd)).toFixed(8))
-			lbtc.avr = parseFloat((lbtc.avr * (1 / cc.usd)).toFixed(8))
-		rows = rows.filter((e)->e.code isnt 'BTC')
-		rows.push btc
+		# btc.localbitcoins = data.localbitcoins
+		# for cc, lbtc of btc.localbitcoins
+		# 	cc = rows.filter((e)->e.code is lbtc.localCode)[0]
+		# 	lbtc.min = parseFloat((lbtc.min * (1 / cc.usd)).toFixed(8))
+		# 	lbtc.max = parseFloat((lbtc.max * (1 / cc.usd)).toFixed(8))
+		# 	lbtc.avr = parseFloat((lbtc.avr * (1 / cc.usd)).toFixed(8))
+		# rows = rows.filter((e)->e.code isnt 'BTC')
+		# rows.push btc
 
 		rows = rows.map (e)->
 			h = e.historic
