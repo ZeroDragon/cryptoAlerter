@@ -1,0 +1,22 @@
+{
+  "name": "crypto-alerter",
+  "version": "2.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.4.1",
+    "cheerio": "^1.0.0-rc.1",
+    "coffee-script": "^1.12.6",
+    "express": "^4.15.3",
+    "moment-timezone": "^0.5.13",
+    "nicelogger": "^17.4.4-b",
+    "node-telegram-bot-api": "^0.27.1",
+    "request": "^2.81.0",
+    "sqlite3": "^3.1.8"
+  }
+}
