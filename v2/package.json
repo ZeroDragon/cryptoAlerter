@@ -13,9 +13,11 @@
     "cheerio": "^1.0.0-rc.1",
     "coffee-script": "^1.12.6",
     "express": "^4.15.3",
+    "later": "^1.2.0",
     "moment-timezone": "^0.5.13",
     "nicelogger": "^17.4.4-b",
     "node-telegram-bot-api": "^0.27.1",
+    "object-sizeof": "^1.2.0",
     "request": "^2.81.0",
     "sqlite3": "^3.1.8"
   }

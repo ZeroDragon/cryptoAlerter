@@ -3,33 +3,35 @@ cheerio = require 'cheerio'
 {parallel, queue} = require 'async'
 request = require 'request'
 moment = require('moment-timezone')
-moment = moment.tz("America/Mexico_City")
+later = require 'later'
 
 addZ = (i)-> "00#{i}".slice(-2)
-byMinute = [0...60].map((e)-> ["b_#{addZ(e)} REAL,","u_#{addZ(e)} REAL,"].join('\n')).join('\n')
-byHour = [0...24].map((e)-> ["b_#{addZ(e)} REAL,","u_#{addZ(e)} REAL,"].join('\n')).join('\n')
-byDay = [1..31].map((e)-> ["b_#{addZ(e)} REAL,","u_#{addZ(e)} REAL,"].join('\n')).join('\n')
+byMinute = [0...60].map((e)-> ["b_#{addZ(e)} REAL,"].join('\n')).join('\n')
+byHour = [0...24].map((e)-> ["b_#{addZ(e)} REAL,"].join('\n')).join('\n')
+byDay = [1..31].map((e)-> ["b_#{addZ(e)} REAL,"].join('\n')).join('\n')
 
-db = new sqlite3.Database("data.db")
+database = new sqlite3.Database("./data.db")
 
-db.serialize ->
-	db.run """CREATE TABLE IF NOT EXISTS RatesByMinute (
+database.serialize ->
+	database.run """CREATE TABLE IF NOT EXISTS RatesByMinute (
 		code text,
 		#{byMinute}
 		name text
 	)"""
-	db.run """CREATE TABLE IF NOT EXISTS RatesByHour (
+	database.run """CREATE TABLE IF NOT EXISTS RatesByHour (
 		code text,
 		#{byHour}
 		name text
 	)"""
-	db.run """CREATE TABLE IF NOT EXISTS RatesByDay (
+	database.run """CREATE TABLE IF NOT EXISTS RatesByDay (
 		code text,
 		#{byDay}
 		name text
 	)"""
+database.close()
 
 getDataFromSources = ->
+	info 'Starting mining'
 	coinCount = 0
 	parallel {
 		coinmarketcap : (callback)->
@@ -145,10 +147,12 @@ getDataFromSources = ->
 		rows.push volabit
 		rows.push bsf
 
+		minute = moment().tz("America/Mexico_City").format("mm")
+		info "Generating row for minute #{minute}"
+
 		rows = rows.map (e)->
 			e.values = {
-				"b_#{moment.format("mm")}" : parseFloat((e.usd * (1 / btc.usd)).toFixed(8))
-				"u_#{moment.format("mm")}" : parseFloat(e.usd)
+				"b_#{minute}" : parseFloat((e.usd * (1 / btc.usd)).toFixed(8))
 			}
 			delete e.mxn
 			delete e.usd
@@ -157,6 +161,7 @@ getDataFromSources = ->
 
 		q.push rows
 
+	db = new sqlite3.Database("./data.db")
 	q = queue (coin,callback)->
 		values = JSON.parse(JSON.stringify(coin.values))
 
@@ -195,5 +200,104 @@ getDataFromSources = ->
 	q.drain = ->
 		return if q.running() + q.length() isnt 0
 		info "Finished inserting #{coinCount} coins into the DB"
+		db.close()
+		generateAcumsByHour()
 
-getDataFromSources()
+getSavedData = (query,items,cb)->
+	db = new sqlite3.Database("./data.db")
+	db.all query, (err,rows)->
+		db.close()
+		rows = rows.map (e)->
+			obj = {}
+			obj.name = e.name
+			obj.code = e.code
+			delete e.name
+			delete e.code
+			obj.values = {btc:[]}
+			for own k,v of e
+				obj.values.btc.push v
+			obj.values.btc = obj.values.btc
+				.map (e)-> e or 0
+				.reduce (acc,val)-> (acc + val)
+			obj.values.btc = obj.values.btc / items
+			return obj
+		cb rows
+
+generateAcumsByHour = ->
+	getSavedData "SELECT * from RatesByMinute",60,(rows)->
+		q.push rows
+	db = new sqlite3.Database("./data.db")
+	q = queue (row,callback)->
+		hour = moment.tz("America/Mexico_City").format("HH")
+		updateQuery = """
+			UPDATE RatesByHour
+			SET
+				b_#{hour} = $b_#{hour}
+			WHERE code = $code
+		"""
+		valuesWithCode = {
+			"$b_#{hour}" : row.values.btc
+			$code : row.code
+		}
+		insertQuery = """
+			INSERT INTO RatesByHour(code,name,b_#{hour})
+			VALUES($code,$name,$b_#{hour})
+		"""
+		plainObject = {
+			$code : row.code
+			$name : row.name
+			"$b_#{hour}" : row.values.btc
+		}
+		db.run updateQuery, valuesWithCode, (err)->
+			if this.changes is 0
+				db.run insertQuery, plainObject, (err)->
+					callback()
+			else
+				callback()
+	,1
+	q.drain = ->
+		return if q.running() + q.length() isnt 0
+		info "Finished acumulator by hour"
+		db.close()
+		generateAcumsByDay()
+
+generateAcumsByDay = ->
+	getSavedData "SELECT * from RatesByHour",24,(rows)->
+		q.push rows
+	db = new sqlite3.Database("./data.db")
+	q = queue (row,callback)->
+		day = moment.tz("America/Mexico_City").format("DD")
+		updateQuery = """
+			UPDATE RatesByDay
+			SET
+				b_#{day} = $b_#{day}
+			WHERE code = $code
+		"""
+		valuesWithCode = {
+			"$b_#{day}" : row.values.btc
+			$code : row.code
+		}
+		insertQuery = """
+			INSERT INTO RatesByDay(code,name,b_#{day})
+			VALUES($code,$name,$b_#{day})
+		"""
+		plainObject = {
+			$code : row.code
+			$name : row.name
+			"$b_#{day}" : row.values.btc
+		}
+		db.run updateQuery, valuesWithCode, (err)->
+			if this.changes is 0
+				db.run insertQuery, plainObject, (err)->
+					callback()
+			else
+				callback()
+	q.drain = ->
+		return if q.running() + q.length() isnt 0
+		db.close()
+		info "Finished acumulator by day"
+
+cronSched = later.parse.cron '* * * * *'
+interval = later.setInterval ->
+	getDataFromSources()
+,cronSched
