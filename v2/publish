@@ -1,0 +1,2 @@
+#!/bin/bash
+rsync -azP --exclude publish --exclude node_modules/ --exclude *.DS_Store ./ root@$1:/root/cryptoAlerter/
