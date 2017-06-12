@@ -94,7 +94,6 @@ bot.onText /^donate$/i, (msg,match)->
 		Do you ❤ this bot? Buy me a coffee
 			*BTC:* `1WmxWNA2MR1TCpL4a3kdMpgg2UJok4jbV`
 			*DASH:* `XtBvftYLvGTqRsw6x1Xtdn42mUh764Rfm4`
-			*Paypal:* `zr.drgn@gmail.com`
 	"""
 
 bot.onText /^alerts$/i, (msg,match)->
