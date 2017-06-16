@@ -108,9 +108,52 @@ waitForData = (cb)->
 			,1000
 	letsGo()
 
-exports.getAlerts = (userId,cb)->
+exports.triggerAlerts = (cb)-> waitForData ->
 	db = new sqlite3.Database("#{__dirname}/data.db","OPEN_READONLY")
-	db.all "SELECT * FROM Alerts WHERE userId = $userId",{$userId:userId},cb
+	db.all "SELECT rowid, * FROM alerts", (err,rows)->
+		db.close()
+		console.log rows
+		rows = rows
+			.filter (e)-> e.snoozedUntil < parseInt(new Date().getTime()/1000)
+			.filter (e)-> e.snoozedUntil isnt -1
+		# cb null,{cache:cache.byMinute,rows:[]}
+		cb err,{cache:cache.byMinute,rows}
+
+exports.getAlerts = getAlerts = (userId,cb)->
+	db = new sqlite3.Database("#{__dirname}/data.db","OPEN_READONLY")
+	db.all "SELECT rowid, * FROM Alerts WHERE userId = $userId",{$userId:userId},(err,data)->
+		db.close()
+		cb err,data
+
+exports.snoozeAlert = (id,minutes)->
+	snoozedUntil = parseInt(new Date().getTime()/1000) + (minutes*60)
+	if minutes is -1
+		snoozedUntil = -1
+	console.log snoozedUntil
+	db = new sqlite3.Database("#{__dirname}/data.db")
+	db.run """
+		UPDATE alerts
+		set snoozedUntil=$snoozedUntil
+		WHERE rowid=$rowid
+	""",{$snoozedUntil:snoozedUntil,$rowid:id},(err,data)->
+
+exports.deleteAlertByPk = deleteAlertByPk = (rowid)->
+	db = new sqlite3.Database("#{__dirname}/data.db")
+	db.run "DELETE FROM alerts WHERE rowid = $rowid",{$rowid:rowid},(err,data)->
+		db.close()
+		if err?
+			cb err,null
+		else
+			cb null,true
+
+exports.deleteAlert = (userId,alertId,cb)->
+	getAlerts userId, (err,alerts)->
+		if err?
+			cb err
+		else
+			rowid = alerts.filter((e,k)-> k is parseInt(alertId)).map((e)-> e.rowid)[0]
+			deleteAlertByPk rowid, cb
+			
 
 exports.upsertAlert = (payload,cb)->
 	updateQuery = """
@@ -140,8 +183,10 @@ exports.upsertAlert = (payload,cb)->
 	db.run updateQuery, updateObj, (err)->
 		if this.changes is 0
 			db.run insertQuery, insertObj, (err)->
+				db.close()
 				cb()
 		else
+			db.close()
 			cb()
 
 exports.getCoin = _getCoin = (code,cb)-> waitForData ->

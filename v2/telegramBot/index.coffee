@@ -1,7 +1,9 @@
 TelegramBot = require 'node-telegram-bot-api'
 bot = new TelegramBot config.telegramToken, {polling:true}
 interactive = require './botInteractiveResponses'
+alerter = require './alerter'
 interactive.setUp bot
+alerter.setup bot
 {
 	returnRate,
 	btnsMarkup,
@@ -13,7 +15,7 @@ interactive.setUp bot
 } = interactive
 {queue} = require 'async'
 
-bot.onText /^help$|^\?$/i, (msg,match)->
+bot.onText /^help$|^\?$|^start$|^\/start$/i, (msg,match)->
 	return if (msg.from.id isnt msg.chat.id)
 	message = """
 		Welcome,
@@ -109,7 +111,20 @@ bot.onText /^alerts$/i, (msg,match)->
 					`[#{k}]` - *#{alert.coin} #{alert.limitValue} #{alert.ammount} #{alert.targetCoin}*
 
 				"""
+			message += """
+				If you setup an alert with the same coin and same same limit, it will replace an existing one.
+				To delete an alert just type `delete alert #` where # is the index of the alert listed.
+			"""
 			sendMessage msg.chat.id, message
+
+bot.onText /^delete alert (.*)$/, (msg,match)->
+	return if (msg.from.id isnt msg.chat.id)
+	brain.deleteAlert msg.from.id, match[1],(err)->
+		if err?
+			message = "An error has ocurred, try again :D"
+		else
+			message = "Alert deleted!"
+		sendMessage msg.chat.id, message
 
 bot.onText /^alert me if (.*) value (.*) (.*) (.*)$/i, (msg,match)->
 	return if (msg.from.id isnt msg.chat.id)
