@@ -71,10 +71,10 @@ processAlerts = (byMinute,definedAlers)->
 				]
 			]
 
-# alertSched = later.parse.recur().on(55).second()
-# interval = later.setInterval ->
-# 	triggerAlerts()
-# ,alertSched
+alertSched = later.parse.recur().on(55).second()
+interval = later.setInterval ->
+	triggerAlerts()
+,alertSched
 
 triggerAlerts = ->
 	brain.triggerAlerts (err,data)->
@@ -95,5 +95,5 @@ exports.setup = (b)->
 		"""
 		bot.editMessageText text,{chat_id:callbackQuery.message.chat.id,message_id:callbackQuery.message.message_id,"parse_mode": "Markdown"}
 
-	triggerAlerts()
+	# triggerAlerts()
 	return

@@ -112,7 +112,6 @@ exports.triggerAlerts = (cb)-> waitForData ->
 	db = new sqlite3.Database("#{__dirname}/data.db","OPEN_READONLY")
 	db.all "SELECT rowid, * FROM alerts", (err,rows)->
 		db.close()
-		console.log rows
 		rows = rows
 			.filter (e)-> e.snoozedUntil < parseInt(new Date().getTime()/1000)
 			.filter (e)-> e.snoozedUntil isnt -1
@@ -129,7 +128,6 @@ exports.snoozeAlert = (id,minutes)->
 	snoozedUntil = parseInt(new Date().getTime()/1000) + (minutes*60)
 	if minutes is -1
 		snoozedUntil = -1
-	console.log snoozedUntil
 	db = new sqlite3.Database("#{__dirname}/data.db")
 	db.run """
 		UPDATE alerts
@@ -137,7 +135,7 @@ exports.snoozeAlert = (id,minutes)->
 		WHERE rowid=$rowid
 	""",{$snoozedUntil:snoozedUntil,$rowid:id},(err,data)->
 
-exports.deleteAlertByPk = deleteAlertByPk = (rowid)->
+deleteAlertByPk = (rowid, cb)->
 	db = new sqlite3.Database("#{__dirname}/data.db")
 	db.run "DELETE FROM alerts WHERE rowid = $rowid",{$rowid:rowid},(err,data)->
 		db.close()
@@ -153,12 +151,11 @@ exports.deleteAlert = (userId,alertId,cb)->
 		else
 			rowid = alerts.filter((e,k)-> k is parseInt(alertId)).map((e)-> e.rowid)[0]
 			deleteAlertByPk rowid, cb
-			
 
-exports.upsertAlert = (payload,cb)->
+exports.upsertAlert = upsertAlert = (payload,cb)->
 	updateQuery = """
 		UPDATE Alerts
-		SET targetCoin=$targetCoin, ammount=$ammount
+		SET targetCoin=$targetCoin, ammount=$ammount, snoozedUntil=null
 		WHERE userId=$userId and coin=$coin and limitValue=$limitValue
 	"""
 	updateObj = {
@@ -188,6 +185,21 @@ exports.upsertAlert = (payload,cb)->
 		else
 			db.close()
 			cb()
+
+exports.activateAlert = (userId,alertId,cb)->
+	getAlerts userId, (err,alerts)->
+		if err?
+			cb err
+		else
+			selectedAlert = alerts.filter((e,k)-> k is parseInt(alertId))[0]
+			updateObj = {
+				targetCoin : selectedAlert.targetCoin
+				ammount : selectedAlert.ammount
+				userId : selectedAlert.userId
+				coin : selectedAlert.coin
+				limitValue : selectedAlert.limitValue
+			}
+			upsertAlert updateObj, cb
 
 exports.getCoin = _getCoin = (code,cb)-> waitForData ->
 	coin = cache.byMinute[code.toUpperCase()]

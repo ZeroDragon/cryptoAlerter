@@ -101,6 +101,16 @@ exports.validateCoin = validateCoin = (code,cb)->
 
 exports.responses = (msg)->
 
+	if msg.from.id isnt msg.chat.id
+		message = """
+			This bot does not support groups any longer.
+			You are welcome to use this bot in private mode at @CryptoAlerterBot
+			So long group and thanks for all the fish.
+		"""
+		sendMessage msg.chat.id, message
+			.then ->
+				bot.leaveChat msg.chat.id
+
 	return if (msg.from.id isnt msg.chat.id)
 	if msg.text.toUpperCase() is 'CANCEL' and smallMemory[msg.from.id]?
 		delete smallMemory[msg.from.id]
@@ -228,3 +238,11 @@ exports.responses = (msg)->
 					else
 						message = err
 						sendMessage msg.chat.id, message, btnsMarkup([["BTC","DASH"],["ETH","XRP"],["USD","EUR"]])
+
+			when 'needcoinforhistoric'
+				validateCoin msg.text, (err)->
+				if !err?
+					delete smallMemory[msg.from.id]
+					brain.getHistoric msg.text, 'hour', (err,data)->
+						processHistoric data, 'hour', (message)->
+							sendMessage msg.chat.id, message

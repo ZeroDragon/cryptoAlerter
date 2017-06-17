@@ -63,6 +63,7 @@ bot.onText /^rate (.*) in (.*)$/i, (msg,match)->
 		sendMessage msg.chat.id, message
 
 bot.onText /^convert$/i, (msg,match)->
+	return if (msg.from.id isnt msg.chat.id)
 	interactive.setSmallMemory msg.from.id, {status : 'needammount2convert'}
 	message = "How much?"
 	sendMessage msg.chat.id, message
@@ -71,6 +72,12 @@ bot.onText /^convert (.*) (.*) to (.*)$/i, (msg,match)->
 	return if (msg.from.id isnt msg.chat.id)
 	returnConvert match[2],match[3],match[1],(message)->
 		sendMessage msg.chat.id, message
+
+bot.onText /^now in$/i, (msg,match)->
+	return if (msg.from.id isnt msg.chat.id)
+	interactive.setSmallMemory msg.from.id, {status : 'needcoinforhistoric'}
+	message = "What coin?"
+	sendMessage msg.chat.id, message
 
 bot.onText /^now in (.*)$/i, (msg,match)->
 	return if (msg.from.id isnt msg.chat.id)
@@ -107,23 +114,39 @@ bot.onText /^alerts$/i, (msg,match)->
 		else
 			message = ""
 			for alert,k in rows
+				if alert.snoozedUntil is -1
+					snooze = "`[DISABLED]`"
+				else
+					snooze = "`[snoozed for #{timeago(alert.snoozedUntil)}]`" if alert.snoozedUntil > 0
+					if !timeago(alert.snoozedUntil)
+						snooze = "`[ACTIVE]`"
 				message += """
-					`[#{k}]` - *#{alert.coin} #{alert.limitValue} #{alert.ammount} #{alert.targetCoin}*
+					`[#{k}]` - *#{alert.coin} #{alert.limitValue} #{alert.ammount} #{alert.targetCoin}* #{snooze}
 
 				"""
 			message += """
 				If you setup an alert with the same coin and same same limit, it will replace an existing one.
 				To delete an alert just type `delete alert #` where # is the index of the alert listed.
+				To activate an alert just type `activate alert #` where # is the index of the alert listed.
 			"""
 			sendMessage msg.chat.id, message
 
 bot.onText /^delete alert (.*)$/, (msg,match)->
 	return if (msg.from.id isnt msg.chat.id)
-	brain.deleteAlert msg.from.id, match[1],(err)->
+	brain.deleteAlert msg.from.id, match[1], (err)->
 		if err?
 			message = "An error has ocurred, try again :D"
 		else
 			message = "Alert deleted!"
+		sendMessage msg.chat.id, message
+
+bot.onText /^activate alert (.*)$/, (msg,match)->
+	return if (msg.from.id isnt msg.chat.id)
+	brain.activateAlert msg.from.id, match[1],(err)->
+		if err?
+			message = "An error has ocurred, try again :D"
+		else
+			message = "Alert activated!"
 		sendMessage msg.chat.id, message
 
 bot.onText /^alert me if (.*) value (.*) (.*) (.*)$/i, (msg,match)->
