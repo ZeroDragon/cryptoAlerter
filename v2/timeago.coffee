@@ -1,7 +1,7 @@
 module.exports = (epoch)->
 	now = parseInt(new Date().getTime()/1000)
 	offset = epoch - now
-	if 0 < offset > 60
+	if offset > 0 and offset < 60
 		return "#{offset} seconds"
-	if 60 < offset > 3600
+	if offset >= 60
 		return "#{Math.floor(offset/60)} minutes"
