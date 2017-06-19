@@ -18,7 +18,7 @@
     "nicelogger": "^17.4.4-b",
     "node-telegram-bot-api": "^0.27.1",
     "object-sizeof": "^1.2.0",
-    "request": "^2.81.0",
-    "sqlite3": "^3.1.8"
+    "redis": "^2.7.1",
+    "request": "^2.81.0"
   }
 }
