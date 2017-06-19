@@ -156,6 +156,7 @@ exports.deleteAlert = (userId, alertId, cb) ->
 			deleteAlertByPk row, cb
 
 exports.upsertAlert = upsertAlert = (payload, cb) ->
+	return unless payload?
 	brain = redis.createClient()
 	brain.select 2
 	brain.set(
