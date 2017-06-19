@@ -124,7 +124,7 @@ bot.onText /^alerts$/i, (msg, match) ->
 			"""
 			sendMessage msg.chat.id, message
 
-bot.onText /^delete alert (.*)$/, (msg, match) ->
+bot.onText /^delete alert (.*)$/i, (msg, match) ->
 	return if (msg.from.id isnt msg.chat.id)
 	brain.deleteAlert msg.from.id, match[1], (err) ->
 		if err?
@@ -133,7 +133,7 @@ bot.onText /^delete alert (.*)$/, (msg, match) ->
 			message = "Alert deleted!"
 		sendMessage msg.chat.id, message
 
-bot.onText /^activate alert (.*)$/, (msg, match) ->
+bot.onText /^activate alert (.*)$/i, (msg, match) ->
 	return if (msg.from.id isnt msg.chat.id)
 	brain.activateAlert msg.from.id, match[1], (err) ->
 		if err?
