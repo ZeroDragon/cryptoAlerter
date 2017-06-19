@@ -50,18 +50,18 @@ bot.onText /^rate (.*) in (.*)$/i, (msg, match) ->
 	return if (msg.from.id isnt msg.chat.id)
 	brain.getCoin match[1], (err, coin) ->
 		getCrossData match[2].split(','), (crosses) ->
-		message = "`#{match[1]}` is Not a valid rate code"
-		if !err?
-			crossText = []
-			for cross in crosses
-				value = (coin.value / cross.value).toFixed(8).split('.')
-				value = parseInt(value[0]).toLocaleString() + '.' + value[1]
-				crossText.push "*#{cross.name}* ≈ #{value}"
-			message = """
-				#{coin.name} `#{match[1].toUpperCase()}`
-				#{crossText.join("\n")}
-			"""
-		sendMessage msg.chat.id, message
+			message = "`#{match[1]}` is Not a valid rate code"
+			if !err?
+				crossText = []
+				for cross in crosses
+					value = (coin.value / cross.value).toFixed(8).split('.')
+					value = parseInt(value[0]).toLocaleString() + '.' + value[1]
+					crossText.push "*#{cross.name}* ≈ #{value}"
+				message = """
+					#{coin.name} `#{match[1].toUpperCase()}`
+					#{crossText.join("\n")}
+				"""
+			sendMessage msg.chat.id, message
 
 bot.onText /^convert$/i, (msg, match) ->
 	return if (msg.from.id isnt msg.chat.id)
