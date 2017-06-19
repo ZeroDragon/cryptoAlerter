@@ -170,8 +170,8 @@ getDataFromSources = ->
 		brain.quit()
 		info "Finished inserting coins into the DB"
 
-# cronSched = later.parse.cron '* * * * *'
-# interval = later.setInterval ->
-# 	getDataFromSources()
-# , cronSched
-getDataFromSources()
+cronSched = later.parse.cron '* * * * *'
+interval = later.setInterval ->
+	getDataFromSources()
+, cronSched
+# getDataFromSources()
