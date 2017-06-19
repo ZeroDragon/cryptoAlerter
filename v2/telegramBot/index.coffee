@@ -31,6 +31,7 @@ bot.onText /^help$|^\?$|^start$|^\/start$/i, (msg, match) ->
 			`now in <coin>` return last hour max, min and last value for requested coin
 			`new alert` starts the new alert setup wizard
 			`alerts` lists your alerts
+			`reminders` list your reminders
 			'donate' shows where you can send your love
 	"""
 	sendMessage msg.chat.id, message, btnsMarkup([["HELP", "RATE"], ["NOW IN", "CONVERT"], ["NEW ALERT", "ALERTS"], ["DONATE"]])
@@ -106,13 +107,12 @@ bot.onText /^alerts$/i, (msg, match) ->
 		else
 			message = ""
 			for alert, k in rows
+				snooze = "`[ACTIVE]`"
 				if alert.snoozedUntil is -1
 					snooze = "`[DISABLED]`"
 				else
 					if alert.snoozedUntil > 0
 						snooze = "`[snoozed for #{timeago(alert.snoozedUntil)}]`"
-					if !timeago(alert.snoozedUntil)
-						snooze = "`[ACTIVE]`"
 				message += """
 					`[#{k}]` - *#{alert.coin} #{alert.limitValue} #{alert.ammount} #{alert.targetCoin}* #{snooze}
 
@@ -142,6 +142,80 @@ bot.onText /^activate alert (.*)$/i, (msg, match) ->
 			message = "Alert activated!"
 		sendMessage msg.chat.id, message
 
+bot.onText /^reminders$/i, (msg,match) ->
+	return if (msg.from.id isnt msg.chat.id)
+	brain.getReminders msg.from.id, (err, rows) ->
+		if !rows? or rows.length is 0
+			message = """
+				There are no reminders for you, to setup a new reminder just type
+				`remind me COIN every NUMBER minutes`
+				ej: `remind me BTC every 5 minutes`
+			"""
+			sendMessage msg.chat.id, message
+		else
+			message = ""
+			for reminder, k in rows
+				if reminder.active
+					if reminder.lastReminder is 0
+						snooze = "`[Last: never]`"
+					else
+						snooze = "`[Last: #{timeago(reminder.lastReminder)} ago]`"
+				else
+					snooze = "`[DISABLED]`"
+				message += """
+					`[#{k}]` - *#{reminder.coin} every #{reminder.minutes} minutes* #{snooze}
+
+				"""
+			message += """
+				If you setup a reminder with the same coin, it will replace an existing one.
+				To delete a reminder just type `delete reminder #` where # is the index of the reminder listed.
+				To activate a reminder just type `activate reminder #` where # is the index of the reminder listed.
+			"""
+			sendMessage msg.chat.id, message
+
+bot.onText /^remind me (.*) every (.*) minutes$/i, (msg,match) ->
+	return if (msg.from.id isnt msg.chat.id)
+	payload = {
+		userId: msg.from.id
+		coin: match[1].toUpperCase()
+		minutes: parseInt(match[2])
+		lastReminder: 0
+	}
+	validateCoin payload.coin, (err1) ->
+		if err1
+			sendMessage msg.chat.id, """
+				`ERROR` looks like you did not enter a correct coin code to set up the alert
+			""", { "parse_mode": "Markdown", "reply_markup": { remove_keyboard: true } }
+			return
+		if isNaN(parseInt(payload.minutes))
+			sendMessage msg.chat.id, """
+				sorry but #{payload.minutes} is not a valid time >.<
+			""", { "parse_mode": "Markdown", "reply_markup": { remove_keyboard: true } }
+			return
+		brain.upsertReminder payload, () ->
+			sendMessage msg.chat.id, """
+				Ok, I'll remind you the value of *#{payload.coin} every #{payload.minutes} minutes*.
+				To vew your defined reminders type `reminders`
+			""", { "parse_mode": "Markdown", "reply_markup": { remove_keyboard: true } }
+
+bot.onText /^delete reminder (.*)$/i, (msg, match) ->
+	return if (msg.from.id isnt msg.chat.id)
+	brain.deleteReminder msg.from.id, match[1], (err) ->
+		if err?
+			message = "An error has ocurred, try again :D"
+		else
+			message = "Reminder deleted!"
+		sendMessage msg.chat.id, message
+
+bot.onText /^activate reminder (.*)$/i, (msg, match) ->
+	return if (msg.from.id isnt msg.chat.id)
+	brain.activateReminder msg.from.id, match[1], (err) ->
+		if err?
+			message = "An error has ocurred, try again :D"
+		else
+			message = "Reminder activated!"
+		sendMessage msg.chat.id, message
+
 bot.onText /^alert me if (.*) value (.*) (.*) (.*)$/i, (msg, match) ->
 	return if (msg.from.id isnt msg.chat.id)
 	payload = {
@@ -151,7 +225,7 @@ bot.onText /^alert me if (.*) value (.*) (.*) (.*)$/i, (msg, match) ->
 		ammount: match[3]
 		targetCoin: match[4].toUpperCase()
 	}
-	validateCoin payload.coin, (err1)-> validateCoin payload.targetCoin, (err2) ->
+	validateCoin payload.coin, (err1) -> validateCoin payload.targetCoin, (err2) ->
 		if err1
 			sendMessage msg.chat.id, """
 				`ERROR` looks like you did not enter a correct coin code to set up the alert

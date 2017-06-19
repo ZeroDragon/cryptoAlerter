@@ -92,6 +92,13 @@ parseAlerts = (rows) ->
 			retval.snoozedUntil = parseInt retval.snoozedUntil
 		return retval
 
+parseReminders = (rows) ->
+	return rows.map (row) ->
+		retval = JSON.parse row
+		retval.minutes = parseInt retval.minutes
+		retval.lastReminder = parseInt retval.lastReminder
+		return retval
+
 exports.triggerAlerts = (cb) -> waitForData ->
 	brain = redis.createClient()
 	brain.select 2
@@ -108,9 +115,40 @@ exports.triggerAlerts = (cb) -> waitForData ->
 			.filter (e) -> e.snoozedUntil isnt -1
 		cb err, { cache: cache.byMinute, rows }
 
+exports.triggerReminders = (cb) -> waitForData ->
+	brain = redis.createClient()
+	brain.select 3
+	waterfall [
+		(callback) -> brain.keys "*", callback
+		(keys, callback) -> brain.mget keys, (err, rows) ->
+			return callback(err, null) if err
+			callback null, parseReminders rows
+	], (err, data) ->
+		brain.quit()
+		data ?= []
+		rows = data
+			.filter (e) -> e.active
+			.filter (e) ->
+				now = parseInt(new Date().getTime() / 1000)
+				nextReminder = e.lastReminder + e.minutes * 60
+				return nextReminder <= now
+		cb err, { cache: cache.byMinute, rows }
+
 exports.getAlerts = getAlerts = (userId, cb) ->
 	brain = redis.createClient()
 	brain.select 2
+	waterfall [
+		(callback) -> brain.keys "#{userId}:*", callback
+		(keys, callback) -> brain.mget keys, (err, rows) ->
+			return callback(err, null) if err
+			callback null, parseAlerts rows
+	], (err, data) ->
+		brain.quit()
+		cb err, data
+
+exports.getReminders = getReminders = (userId, cb) ->
+	brain = redis.createClient()
+	brain.select 3
 	waterfall [
 		(callback) -> brain.keys "#{userId}:*", callback
 		(keys, callback) -> brain.mget keys, (err, rows) ->
@@ -147,6 +185,17 @@ deleteAlertByPk = (payload, cb) ->
 			cb err, data
 	)
 
+deleteReminderByPk = (payload, cb) ->
+	return unless payload?
+	brain = redis.createClient()
+	brain.select 3
+	brain.del(
+		"#{payload.userId}:#{payload.coin}",
+		(err, data) ->
+			brain.quit()
+			cb err, data
+	)
+
 exports.deleteAlert = (userId, alertId, cb) ->
 	getAlerts userId, (err, alerts) ->
 		if err?
@@ -155,6 +204,15 @@ exports.deleteAlert = (userId, alertId, cb) ->
 			row = alerts
 				.filter((e, k) -> k is parseInt(alertId))[0]
 			deleteAlertByPk row, cb
+
+exports.deleteReminder = (userId, alertId, cb) ->
+	getReminders userId, (err, alerts) ->
+		if err?
+			cb err
+		else
+			row = alerts
+				.filter((e, k) -> k is parseInt(alertId))[0]
+			deleteReminderByPk row, cb
 
 exports.upsertAlert = upsertAlert = (payload, cb) ->
 	return unless payload?
@@ -170,6 +228,35 @@ exports.upsertAlert = upsertAlert = (payload, cb) ->
 			cb()
 	)
 
+exports.upsertReminder = upsertReminder = (payload, cb) ->
+	return unless payload?
+	brain = redis.createClient()
+	brain.select 3
+	brain.set(
+		"#{payload.userId}:#{payload.coin}",
+		JSON.stringify(Object.assign payload, {
+			active: true
+		}),
+		(err, data)->
+			brain.quit()
+			cb()
+	)
+
+exports.disableReminder = (key, cb) ->
+	return unless key?
+	brain = redis.createClient()
+	brain.select 3
+	brain.get(
+		key,
+		(err, data)->
+			return cb() if !data?
+			reminder = JSON.parse data
+			reminder.active = false
+			brain.set key, JSON.stringify(reminder), ->
+				brain.quit()
+				cb()
+	)
+
 exports.activateAlert = (userId, alertId, cb) ->
 	getAlerts userId, (err, alerts) ->
 		if err?
@@ -178,6 +265,15 @@ exports.activateAlert = (userId, alertId, cb) ->
 			updateObj = alerts
 				.filter((e, k) -> k is parseInt(alertId))[0]
 			upsertAlert updateObj, cb
+
+exports.activateReminder = (userId, reminderId, cb) ->
+	getReminders userId, (err, reminders)->
+		if err?
+			cb err
+		else
+		updateObj = reminders
+			.filter((e, k) -> k is parseInt(reminderId))[0]
+		upsertReminder updateObj, cb
 
 exports.getCoin = _getCoin = (code, cb) -> waitForData ->
 	coin = cache.byMinute[code.toUpperCase()]
