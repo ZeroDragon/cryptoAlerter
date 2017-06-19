@@ -137,6 +137,7 @@ exports.snoozeAlert = (id, minutes) ->
 		brain.quit()
 
 deleteAlertByPk = (payload, cb) ->
+	return unless payload?
 	brain = redis.createClient()
 	brain.select 2
 	brain.del(
