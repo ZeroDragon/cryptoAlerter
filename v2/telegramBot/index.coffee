@@ -47,6 +47,11 @@ bot.onText /^rate (.*)$/i, (msg, match) ->
 	returnRate match[1], (message) ->
 		sendMessage msg.chat.id, message
 
+		brain.getHistoric match[1], 'hour', (err, data) ->
+			return if err?
+			processHistoric data, 'hour', (message) ->
+				sendMessage msg.chat.id, message
+
 bot.onText /^rate (.*) in (.*)$/i, (msg, match) ->
 	return if (msg.from.id isnt msg.chat.id)
 	brain.getCoin match[1], (err, coin) ->
@@ -88,6 +93,11 @@ bot.onText /^now in (.*)$/i, (msg, match) ->
 			sendMessage msg.chat.id, "`#{match[1]}` is Not a valid rate code"
 			return
 		processHistoric data, 'hour', (message) ->
+			message = """
+				#{data.name} `#{data.code}`
+				Historic values from the last hour
+				#{message}
+			"""
 			sendMessage msg.chat.id, message
 
 bot.onText /^donate$/i, (msg, match) ->
