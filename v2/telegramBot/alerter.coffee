@@ -23,11 +23,11 @@ btnsMarkup = (btns) ->
 processReminders = (byMinute, definedReminders) ->
 	coins = definedReminders.map (e) -> e.coin
 	values = {}
-	usd = JSON.parse(JSON.atringify(byMinute.USD))
+	usd = JSON.parse(JSON.stringify(byMinute.USD))
 	usd.value = usd.values.pop()
 	delete usd.values
 	for coin in coins
-		values[coin] = JSON.parse(JSON.atringify(byMinute[coin]))
+		values[coin] = JSON.parse(JSON.stringify(byMinute[coin]))
 		values[coin].value = values[coin].values.pop()
 		delete values[coin].values
 	toRemind = []
