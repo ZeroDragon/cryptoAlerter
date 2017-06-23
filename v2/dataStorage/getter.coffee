@@ -6,7 +6,12 @@ sizeof = require 'object-sizeof'
 
 addZ = (i) -> "00#{i}".slice(-2)
 
+isFilling = false
+
 fillCache = ->
+	return if isFilling
+	isFilling = true
+	info "Filling cache"
 	brain = redis.createClient()
 	waterfall [
 		(callback) ->
@@ -16,6 +21,7 @@ fillCache = ->
 			series {
 				names: (cb) ->
 					brain.mget keys, (err, names) ->
+						return callback err if err?
 						cb null, names.map (name, index) ->
 							return {
 								name
@@ -47,6 +53,7 @@ fillCache = ->
 							cb null, res
 			}, callback
 	], (err, data) ->
+		isFilling = false
 		if err?
 			warning "Error loading coins D:"
 			return
@@ -76,9 +83,11 @@ waitForData = (cb) ->
 	timer = false
 	letsGo = ->
 		clearTimeout(timer) if timer
-		if cache.byMinute?.BTC?
+		if cache.byMinute?.BTC?.values?[0]?
 			cb()
 		else
+			fillCache()
+			warning 'cache not ready... waiting for data'
 			timer = setTimeout ->
 				letsGo()
 			, 1000
@@ -307,7 +316,7 @@ exports.getHistoric = (code, frame, cb) -> waitForData ->
 			min: (coin.values[0] / usd.values[0]) or 0
 			max: (coin.values[0] / usd.values[0]) or 0
 			last: (
-					coin.values[coin.values.length - 1] / usd.values[usd.values.length - 1]
+				coin.values[coin.values.length - 1] / usd.values[usd.values.length - 1]
 			) or 0
 			name: usd.name
 		}
