@@ -6,7 +6,9 @@ sendMessage = (id, message, opts) ->
 		id, message, opts ?= {
 			parse_mode: "Markdown", reply_markup: { remove_keyboard: true }
 		}
-	)
+	).catch (e)->
+		info "Chat deleted or user marked as spam. Deleting alerts and reminders"
+		brain.deleteAllUserAlertsAndReminders id
 
 btnsMarkup = (btns) ->
 	{
@@ -21,11 +23,11 @@ btnsMarkup = (btns) ->
 processReminders = (byMinute, definedReminders) ->
 	coins = definedReminders.map (e) -> e.coin
 	values = {}
-	usd = Object.assign {}, byMinute.USD
+	usd = JSON.parse(JSON.atringify(byMinute.USD))
 	usd.value = usd.values.pop()
 	delete usd.values
 	for coin in coins
-		values[coin] = Object.assign {}, byMinute[coin]
+		values[coin] = JSON.parse(JSON.atringify(byMinute[coin]))
 		values[coin].value = values[coin].values.pop()
 		delete values[coin].values
 	toRemind = []
@@ -71,11 +73,11 @@ processAlerts = (byMinute, definedAlers) ->
 	values = {}
 	valuesTarget = {}
 	for coin in coins
-		values[coin] = Object.assign {}, byMinute[coin]
+		values[coin] = JSON.parse(JSON.stringify(byMinute[coin]))
 		values[coin].value = values[coin].values.pop()
 		delete values[coin].values
 	for target in targets
-		valuesTarget[target] = Object.assign {}, byMinute[target]
+		valuesTarget[target] = JSON.parse(JSON.stringify(byMinute[target]))
 		valuesTarget[target].value = valuesTarget[target].values.pop()
 		delete valuesTarget[target].values
 

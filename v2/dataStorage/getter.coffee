@@ -63,7 +63,7 @@ fillCache = ->
 			}
 		RatesByMinute = {}
 		for coin in coins
-			_coin = Object.assign {}, coin
+			_coin = JSON.parse(JSON.stringify(coin))
 			delete _coin.code
 			RatesByMinute[coin.code] = _coin
 		coin = null
@@ -205,6 +205,29 @@ deleteReminderByPk = (payload, cb) ->
 			cb err, data
 	)
 
+exports.deleteAllUserAlertsAndReminders = (userid) ->
+	q = queue (task, cb)->
+		{ func, row } = task
+		func row, ->
+			info "deleted #{row.userId}"
+			cb()
+	,1
+	getAlerts userid, (err, alerts) ->
+		return unless alerts?
+		q.push alerts.map (e)->
+			{
+				func: deleteAlertByPk
+				row: e
+			}
+	getReminders userid, (err, reminders)->
+		return unless reminders
+		q.push reminders.map (e)->
+			{
+				func: deleteReminderByPk
+				row: e
+			}
+		
+
 exports.deleteAlert = (userId, alertId, cb) ->
 	getAlerts userId, (err, alerts) ->
 		if err?
@@ -302,7 +325,7 @@ exports.getHistoric = (code, frame, cb) -> waitForData ->
 		cb 404
 		return
 
-	coin = Object.assign {}, coin
+	coin = JSON.parse(JSON.stringify(coin))
 	usd = cache.byMinute.USD
 
 	coin.stats = {
