@@ -72,11 +72,7 @@ exports.returnConvert = returnConvert = (origin,crossData,ammount,cb)->
 		cb message
 
 exports.processHistoric = processHistoric = (data,frame,cb)->
-	message = """
-		#{data.name} `#{data.code}`
-		Historic values from the last #{frame}
-
-	"""
+	message = ""
 	for own key,stat of data.stats
 		message += """
 
@@ -86,6 +82,10 @@ exports.processHistoric = processHistoric = (data,frame,cb)->
 			Last: #{stat.last}
 
 		"""
+	message += """
+		Movement in last hour: #{data.stats.hourlyIncrease}
+		Volatility: #{data.stats.volatility}
+	"""
 	cb message
 
 exports.validateCoin = validateCoin = (code,cb)->
@@ -245,4 +245,9 @@ exports.responses = (msg)->
 					delete smallMemory[msg.from.id]
 					brain.getHistoric msg.text, 'hour', (err,data)->
 						processHistoric data, 'hour', (message)->
+							message = """
+								#{data.name} `#{data.code}`
+								Historic values from the last hour
+								#{message}
+							"""
 							sendMessage msg.chat.id, message

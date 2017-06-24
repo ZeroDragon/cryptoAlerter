@@ -345,6 +345,21 @@ exports.getHistoric = (code, frame, cb) -> waitForData ->
 		}
 	}
 
+	hourlyAverage = coin.values
+		.map (e, k)->
+			return e / usd.values[k]
+		.reduce (prev, curr)->
+			return prev + curr
+	hourlyAverage = hourlyAverage / 60
+
+	usd.tendency = usd.values[-10...]
+	tendencyAverage = coin.values[-10...]
+		.map (e, k)->
+			return e / usd.tendency[k]
+		.reduce (prev, curr)->
+			return prev + curr
+	tendencyAverage = tendencyAverage / 10
+
 	coin.values.forEach (e, k) ->
 		coin.stats.btc.min = Math.min coin.stats.btc.min, e
 		coin.stats.btc.max = Math.max coin.stats.btc.max, e
@@ -365,15 +380,20 @@ exports.getHistoric = (code, frame, cb) -> waitForData ->
 			else
 				return ''
 
+	increase = coin.stats.usd.last - tendencyAverage
+	percentIncrease = (increase / tendencyAverage) * 100
+	increaseHour = coin.stats.usd.last - hourlyAverage
+	percentHourIncrease = (increaseHour / hourlyAverage) * 100
+
 	coin.stats.btc.min = localizeFloat coin.stats.btc.min.toFixed(8)
 	coin.stats.btc.max = localizeFloat coin.stats.btc.max.toFixed(8)
 	coin.stats.btc.last = localizeFloat coin.stats.btc.last.toFixed(8)
 	coin.stats.usd.min = localizeFloat coin.stats.usd.min.toFixed(8)
 	coin.stats.usd.max = localizeFloat coin.stats.usd.max.toFixed(8)
 	coin.stats.usd.last = localizeFloat coin.stats.usd.last.toFixed(8)
+	# coin.stats.hourlyIncrease = percentHourIncrease
+	# coin.stats.volatility = percentIncrease
 
-	if code is 'USD'
-		delete coin.stats.usd
 	if code is 'BTC'
 		delete coin.stats.btc
 
