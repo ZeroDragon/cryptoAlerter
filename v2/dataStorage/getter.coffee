@@ -328,7 +328,7 @@ exports.guessCoins = (query)->
 		delete p.values
 		arr.push p
 	return arr.filter (e)->
-		e.code.indexOf(query.toUpperCase()) isnt -1 or e.name.indexOf(query.toUpperCase()) isnt -1
+		e.code.indexOf(query.toUpperCase()) isnt -1 or e.name.toUpperCase().indexOf(query.toUpperCase()) isnt -1
 
 exports.getHistoric = (code, frame, cb) -> waitForData ->
 	code = code.toUpperCase()
