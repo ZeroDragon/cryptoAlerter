@@ -278,4 +278,4 @@ exports.responses = (msg)->
 				sendMessage(msg.chat.id, "Sending message to everyone")
 					.then ->
 						for id in users
-							sendMessage msg.chat.id, text
+							sendMessage id, text
