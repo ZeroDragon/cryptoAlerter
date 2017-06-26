@@ -291,7 +291,7 @@ bot.on 'inline_query', (msg)->
 			description: "Get #{e.code} rate in usd"
 		}
 
-	bot.answerInlineQuery msg.id, possibles
+	bot.answerInlineQuery msg.id, possibles[0..50]
 
 # bot.on 'chosen_inline_result', (msg)->
 # 	console.log 'selected'
