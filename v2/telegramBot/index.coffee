@@ -273,3 +273,27 @@ bot.onText /^new alert$/i, (msg, match) ->
 	sendMessage msg.chat.id, message, btnsMarkup([["BTC", "DASH"], ["ETH", "XRP"], ["USD", "EUR"]])
 
 bot.on 'text', interactive.responses
+
+bot.on 'inline_query', (msg)->
+	return if msg.query.length < 3
+	possibles = brain.guessCoins(msg.query).map (e)->
+		{
+			type: 'article'
+			id: "rate #{e.code}"
+			title: "#{e.name} current rate"
+			input_message_content: {
+				message_text: """
+					*#{e.name}* `#{e.code}`
+					*#{e.cross}* ≈ #{e.value}
+					via @CryptoAlerterBot
+				"""
+				"parse_mode": "Markdown",
+			},
+			description: "Get #{e.code} rate in usd"
+		}
+
+	bot.answerInlineQuery msg.id, possibles
+
+# bot.on 'chosen_inline_result', (msg)->
+# 	console.log 'selected'
+# 	console.log msg

@@ -318,6 +318,18 @@ exports.getCoin = _getCoin = (code, cb) -> waitForData ->
 		value: coin.values[coin.values.length - 1]
 	}
 
+exports.guessCoins = (query)->
+	arr = []
+	usd = cache.byMinute.USD
+	for own k, v of cache.byMinute
+		p = Object.assign JSON.parse(JSON.stringify(v)), {code:k}
+		p.value = p.values[p.values.length-1] / usd.values[usd.values.length-1]
+		p.cross = usd.name
+		delete p.values
+		arr.push p
+	return arr.filter (e)->
+		e.code.indexOf(query.toUpperCase()) isnt -1 or e.name.indexOf(query.toUpperCase()) isnt -1
+
 exports.getHistoric = (code, frame, cb) -> waitForData ->
 	code = code.toUpperCase()
 	coin = cache.byMinute[code]
