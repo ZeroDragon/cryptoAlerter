@@ -272,6 +272,22 @@ bot.onText /^new alert$/i, (msg, match) ->
 	}
 	sendMessage msg.chat.id, message, btnsMarkup([["BTC", "DASH"], ["ETH", "XRP"], ["USD", "EUR"]])
 
+bot.onText /^send message to all$/i, (msg, match)->
+	return if !config.botOwner
+	return if msg.from.id.toString() isnt config.botOwner
+	brain.getAllUsers (err, data)->
+		return if err
+		users = data.alerts.concat(data.reminders)
+			.map (e)->
+				return e.split(':')[0]
+			.filter (element, key, self)->
+				return self.indexOf(element) is key
+		interactive.setSmallMemory msg.from.id, {
+			status: 'needMessageFromOwner'
+			users : users
+		}
+		sendMessage msg.chat.id, "Write down what message you want to send"
+
 bot.on 'text', interactive.responses
 
 bot.on 'inline_query', (msg)->
@@ -288,7 +304,7 @@ bot.on 'inline_query', (msg)->
 				"""
 				"parse_mode": "Markdown",
 			},
-			description: "Get #{e.code} rate in usd"
+			description: "#{e.cross} ≈ #{e.value}"
 		}
 
 	bot.answerInlineQuery msg.id, possibles[0..10]

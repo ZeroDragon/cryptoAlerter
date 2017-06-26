@@ -270,3 +270,12 @@ exports.responses = (msg)->
 								#{message}
 							"""
 							sendMessage msg.chat.id, message
+			
+			when 'needMessageFromOwner'
+				{ users } = smallMemory[msg.from.id]
+				{ text } = msg
+				delete smallMemory[msg.from.id]
+				sendMessage(msg.chat.id, "Sending message to everyone")
+					.then ->
+						for id in users
+							sendMessage msg.chat.id, text

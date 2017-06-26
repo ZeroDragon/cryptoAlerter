@@ -167,6 +167,20 @@ exports.getReminders = getReminders = (userId, cb) ->
 		brain.quit()
 		cb err, data
 
+exports.getAllUsers = (cb)->
+	series {
+		alerts : (callback) ->
+			brain = redis.createClient()
+			brain.select 2
+			brain.keys "*", callback
+			brain.quit()
+		reminders: (callback) ->
+			brain = redis.createClient()
+			brain.select 3
+			brain.keys "*", callback
+			brain.quit()
+	}, cb
+
 exports.snoozeAlert = (id, minutes) ->
 	snoozedUntil = parseInt(new Date().getTime() / 1000) + (minutes * 60)
 	if minutes is -1
