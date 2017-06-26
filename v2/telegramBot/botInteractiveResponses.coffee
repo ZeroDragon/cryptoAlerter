@@ -278,4 +278,8 @@ exports.responses = (msg)->
 				sendMessage(msg.chat.id, "Sending message to everyone")
 					.then ->
 						for id in users
-							sendMessage id, text
+							sendMessage(
+								id, text
+							).catch (e)->
+								info "Chat deleted or user marked as spam. Deleting alerts and reminders"
+								brain.deleteAllUserAlertsAndReminders id
