@@ -1,2 +1,2 @@
 #!/bin/bash
-rsync -azP --exclude config.json --exclude publish --exclude node_modules/ --exclude *.DS_Store ./ root@$1:/root/cryptoAlerter/
+rsync -azP --exclude config.json --exclude publish --exclude dataStorage/dump.rdb  --exclude node_modules/ --exclude *.DS_Store ./ root@$1:/root/cryptoAlerter/
