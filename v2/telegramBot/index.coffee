@@ -285,7 +285,6 @@ bot.on 'inline_query', (msg)->
 				message_text: """
 					*#{e.name}* `#{e.code}`
 					*#{e.cross}* ≈ #{e.value}
-					via @CryptoAlerterBot
 				"""
 				"parse_mode": "Markdown",
 			},
