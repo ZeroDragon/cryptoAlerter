@@ -8,18 +8,18 @@ later = require 'later'
 getDataFromSources = ->
 	info 'Starting mining'
 	parallel {
-		# avocado: (callback) ->
-		# 	info "[🙏] walmart"
-		# 	url = 'https://super.walmart.com.mx/Agua/Aguacate-hass-por-kilo/00000000003354'
-		# 	request.get url, (err, response, body) ->
-		# 		info '[💪] walmart'
-		# 		$ = cheerio.load body
-		# 		rs = $('#skuSpecialPrice')
-		# 		callback(null, {
-		# 			"name": "Aguacatl"
-		# 			"code": "AVO"
-		# 			"mxn": parseFloat(rs[0].attribs.value)
-		# 		})
+		avocado: (callback) ->
+			info "[🙏] walmart"
+			url = 'https://super.walmart.com.mx/Agua/Aguacate-hass-por-kilo/00000000003354'
+			request.get url, (err, response, body) ->
+				info '[💪] walmart'
+				$ = cheerio.load body
+				rs = $('#skuSpecialPrice')
+				callback(null, {
+					"name": "Aguacatl"
+					"code": "AVO"
+					"mxn": parseFloat(rs[0].attribs.value)
+				})
 		coinmarketcap: (callback) ->
 			info "[🙏] coinmarketcap"
 			url = 'http://coinmarketcap.com/all/views/all/'
@@ -130,12 +130,12 @@ getDataFromSources = ->
 
 		btc = JSON.parse(JSON.stringify(rows.filter((e) -> e.code is 'BTC')[0]))
 		mxn = rows.filter((e) -> e.code is 'MXN')[0]
-		# avocado.usd = parseFloat(mxn.usd * avocado.mxn).toFixed(8)
+		avocado.usd = parseFloat(mxn.usd * avocado.mxn).toFixed(8)
 		bitso_eth.usd = parseFloat(mxn.usd * bitso_eth.mxn).toFixed(8)
 		bitso_btc.usd = parseFloat(mxn.usd * bitso_btc.mxn).toFixed(8)
 		bitso_xrp.usd = parseFloat(mxn.usd * bitso_xrp.mxn).toFixed(8)
 		volabit.usd = parseFloat(mxn.usd * volabit.mxn).toFixed(8)
-		# rows.push avocado
+		rows.push avocado
 		rows.push bitso_eth
 		rows.push bitso_btc
 		rows.push bitso_xrp

@@ -47,11 +47,6 @@ bot.onText /^rate (.*)$/i, (msg, match) ->
 	returnRate match[1], (message) ->
 		sendMessage msg.chat.id, message
 
-		brain.getHistoric match[1], 'hour', (err, data) ->
-			return if err?
-			processHistoric data, 'hour', (message) ->
-				sendMessage msg.chat.id, message
-
 bot.onText /^rate (.*) in (.*)$/i, (msg, match) ->
 	return if (msg.from.id isnt msg.chat.id)
 	brain.getCoin match[1], (err, coin) ->

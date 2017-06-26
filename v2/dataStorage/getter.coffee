@@ -352,10 +352,10 @@ exports.getHistoric = (code, frame, cb) -> waitForData ->
 			return prev + curr
 	hourlyAverage = hourlyAverage / 60
 
-	usd.tendency = usd.values[-10...]
+	tendency = usd.values[-10...]
 	tendencyAverage = coin.values[-10...]
 		.map (e, k)->
-			return e / usd.tendency[k]
+			return e / tendency[k]
 		.reduce (prev, curr)->
 			return prev + curr
 	tendencyAverage = tendencyAverage / 10
@@ -391,8 +391,9 @@ exports.getHistoric = (code, frame, cb) -> waitForData ->
 	coin.stats.usd.min = localizeFloat coin.stats.usd.min.toFixed(8)
 	coin.stats.usd.max = localizeFloat coin.stats.usd.max.toFixed(8)
 	coin.stats.usd.last = localizeFloat coin.stats.usd.last.toFixed(8)
-	# coin.stats.hourlyIncrease = percentHourIncrease
-	# coin.stats.volatility = percentIncrease
+	coin.tendency = {}
+	coin.tendency.hourlyIncrease = percentHourIncrease
+	coin.tendency.volatility = percentIncrease
 
 	if code is 'BTC'
 		delete coin.stats.btc

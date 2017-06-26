@@ -9,24 +9,47 @@ exports.setUp = (bo)->
 exports.returnRate = returnRate = (coinCode,cb)->
 	brain.getCoin coinCode,(err,coin)-> getCrossData ['usd'],(crosses)->
 		message = "`#{coinCode}` is Not a valid rate code"
-		if !err?
-			crossText = []
-			for cross in crosses
-				value = (coin.value / cross.value).toFixed(8).split('.')
-				value = parseInt(value[0]).toLocaleString()+'.'+value[1]
-				crossText.push "*#{cross.name}* ≈ #{value}"
-			message = """
-				#{coin.name} `#{coinCode.toUpperCase()}`
-				#{crossText.join("\n")}
+		return cb message if err
+
+		crossText = []
+		for cross in crosses
+			value = (coin.value / cross.value).toFixed(8).split('.')
+			value = parseInt(value[0]).toLocaleString()+'.'+value[1]
+			crossText.push "*#{cross.name}* ≈ #{value}"
+		message = """
+			#{coin.name} `#{coinCode.toUpperCase()}`
+			#{crossText.join("\n")}
+
+		"""
+		if coinCode.toUpperCase() isnt 'BTC'
+			value = coin.value.toFixed(8).split('.')
+			value = parseInt(value[0]).toLocaleString()+'.'+value[1]
+			message += """
+				*Bitcoin* ≈ #{value}
 
 			"""
-			if coinCode.toUpperCase() isnt 'BTC'
-				value = coin.value.toFixed(8).split('.')
-				value = parseInt(value[0]).toLocaleString()+'.'+value[1]
-				message += """
-					*Bitcoin* ≈ #{value}
+		brain.getHistoric coinCode, 'hour', (err, data) ->
+			{tendency:{hourlyIncrease,volatility}} = data
+			movement = "below 📉"
+			movement = "above 📈" if hourlyIncrease > 0
+			movementv = "*decrement* 📉"
+			movementv = "*increment* 📈" if volatility > 0
+			m1 = """
+				Last value of #{coin.name} is *#{movement}* by *#{Math.abs(hourlyIncrease.toFixed(2))}%* from the hourly average value.
+
+			"""
+			m2 = """
+				Also has tendency to #{movementv} with a volatility of *#{Math.abs(volatility.toFixed(2))}%* in the last 10 minutes.
+				IMHO, you might want to keep an eye on this one for a while if you want to buy or sell.
+			"""
+			if Math.abs(hourlyIncrease) < 0.01
+				m1 = """
+					#{coin.name} has been static in the last hour
+					
 				"""
-		cb message
+			if Math.abs(volatility) < 0.01
+				m2 = "Also the volatility is stable, good time to take action, IMHO"
+			cb message + m1 + m2
 
 exports.getCrossData = getCrossData = (crosses,cb)->
 	results = []
@@ -82,10 +105,6 @@ exports.processHistoric = processHistoric = (data,frame,cb)->
 			Last: #{stat.last}
 
 		"""
-	message += """
-		Movement in last hour: #{data.stats.hourlyIncrease}
-		Volatility: #{data.stats.volatility}
-	"""
 	cb message
 
 exports.validateCoin = validateCoin = (code,cb)->
