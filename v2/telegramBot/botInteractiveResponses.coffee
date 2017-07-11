@@ -78,6 +78,21 @@ exports.btnsMarkup = btnsMarkup = (btns)->
 exports.sendMessage = sendMessage = (id,message,opts)->
 	bot.sendMessage(id, message, opts ?= {parse_mode : "Markdown",reply_markup:{remove_keyboard:true}})
 
+exports.returnConvertObj = (origin,crossData,ammount,cb)->
+	brain.getCoin origin,(err,coin)-> getCrossData crossData.split(','),(crosses)->
+		return cb null if err?
+		obj = {
+			coinName: coin.name
+			coinCode: origin.toUpperCase()
+			crossData: []
+		}
+		for cross in crosses
+			value = (coin.value / cross.value) * parseFloat(ammount)
+			value = (value).toFixed(8).split('.')
+			value = parseInt(value[0]).toLocaleString()+'.'+value[1]
+			obj.crossData.push {coinName:cross.name, value}
+		cb obj
+
 exports.returnConvert = returnConvert = (origin,crossData,ammount,cb)->
 	brain.getCoin origin,(err,coin)-> getCrossData crossData.split(','),(crosses)->
 		message = "`#{origin}` is Not a valid rate code"

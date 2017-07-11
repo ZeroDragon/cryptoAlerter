@@ -10,6 +10,7 @@ alerter.setup bot
 	getCrossData,
 	sendMessage,
 	returnConvert,
+	returnConvertObj,
 	processHistoric,
 	validateCoin
 } = interactive
@@ -290,24 +291,57 @@ bot.onText /^send message to all$/i, (msg, match)->
 
 bot.on 'text', interactive.responses
 
-bot.on 'inline_query', (msg)->
-	return if msg.query.length < 3
-	possibles = brain.guessCoins(msg.query).map (e)->
-		{
+inlineConverter = ({ match, id })->
+	returnConvertObj match[2], match[3], match[1], (data) ->
+		return unless data?
+		crossText = data.crossData
+			.map (e)-> "*#{e.coinName}* ≈ #{e.value}"
+			.join('\n')
+		crossDescription = data.crossData
+			.map (e)-> "#{e.coinName} ≈ #{e.value}"
+			.join(' # ')
+		resp = [{
 			type: 'article'
-			id: "rate #{e.code}"
-			title: "#{e.name} current rate"
+			id: "#{match[1]} #{match[2]} #{match[3]}"
+			title: "Convert #{match[1]} coin to:"
 			input_message_content: {
 				message_text: """
-					*#{e.name}* `#{e.code}`
-					*#{e.cross}* ≈ #{e.value}
+					*#{match[1]}* #{data.coinName} to:
+					#{crossText}
 				"""
 				"parse_mode": "Markdown",
 			},
-			description: "#{e.cross} ≈ #{e.value}"
-		}
+			description: "#{crossDescription}"
+		}]
+		bot.answerInlineQuery id, resp
 
-	bot.answerInlineQuery msg.id, possibles[0..10]
+bot.on 'inline_query', ({ query, id })->
+	return if query.length < 3
+
+	converter = /^c (.*) (.*) to (.*)$/i
+	if converter.test(query)
+		return inlineConverter { match: query.match(converter), id }
+
+	rates = /^(.*)$/i
+	if rates.test(query)
+		possibles = brain.guessCoins(query).map (e)->
+			value = e.value.toFixed(8).split('.')
+			value = parseInt(value[0]).toLocaleString() + '.' + value[1]
+			return {
+				type: 'article'
+				id: "rate #{e.code}"
+				title: "#{e.name} current rate"
+				input_message_content: {
+					message_text: """
+						*#{e.name}* `#{e.code}`
+						*#{e.cross}* ≈ #{value}
+					"""
+					"parse_mode": "Markdown",
+				},
+				description: "#{e.cross} ≈ #{value}"
+			}
+
+		bot.answerInlineQuery id, possibles[0..10]
 
 # bot.on 'chosen_inline_result', (msg)->
 # 	console.log 'selected'
