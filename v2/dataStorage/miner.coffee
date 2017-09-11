@@ -113,7 +113,7 @@ getDataFromSources = ->
 				})
 		volabit: (callback) ->
 			info "[🙏] coinmonitor"
-			url = 'http://coinmonitor.com.mx/data_mx.json'
+			url = 'http://mx.coinmonitor.info/data_mx.json'
 			request.get url, { json: true }, (err, response, body) ->
 				info "[💪] coinmonitor"
 				volabit = body.VOLABIT_buy.replace(/,/g, '')
