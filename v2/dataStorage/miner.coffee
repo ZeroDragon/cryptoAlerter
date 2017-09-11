@@ -20,26 +20,19 @@ getDataFromSources = ->
 					"code": "AVO"
 					"mxn": parseFloat(rs[0].attribs.value)
 				})
+
 		coinmarketcap: (callback) ->
 			info "[🙏] coinmarketcap"
-			url = 'http://coinmarketcap.com/all/views/all/'
-			request.get url, (err, response, body) ->
+			url = 'https://api.coinmarketcap.com/v1/ticker/'
+			request.get url, {json:true}, (err, response, rs) ->
 				info "[💪] coinmarketcap"
-				$ = cheerio.load body
-				rs = $('#currencies-all tbody tr')
-				delete rs.options
-				delete rs._root
-				delete rs.length
-				delete rs.prevObject
 				rows = []
-				for own k, v of rs
-					obj = {}
-					children = v.children.filter (e) -> e.type is 'tag'
-					obj.name = children[1].children.filter((e) ->
-						e.name is 'img'
-					)[0].attribs.alt
-					obj.code = children[2].children[0].data
-					obj.usd = parseFloat(children[4].children[1].attribs['data-usd']) or 0
+				for coin in rs
+					obj = {
+						name: coin.name
+						code: coin.symbol
+						usd: coin.price_usd
+					}
 					rows.push obj
 				callback(null, rows)
 		official: (callback) ->
@@ -170,8 +163,8 @@ getDataFromSources = ->
 		brain.quit()
 		info "Finished inserting coins into the DB"
 
-cronSched = later.parse.cron '* * * * *'
-interval = later.setInterval ->
-	getDataFromSources()
-, cronSched
-# getDataFromSources()
+# cronSched = later.parse.cron '* * * * *'
+# interval = later.setInterval ->
+# 	getDataFromSources()
+# , cronSched
+getDataFromSources()
