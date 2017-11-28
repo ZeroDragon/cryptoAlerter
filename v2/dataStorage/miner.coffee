@@ -74,36 +74,26 @@ getDataFromSources = ->
 					code: "BSF"
 					usd: 1 / body.USD.transfer_cucuta
 				}
-		bitso_eth: (callback) ->
-			info "[🙏] bitso (eth)"
-			url = "https://bitso.com/api/v2/ticker?book=eth_mxn"
+		bitso: (callback) ->
+			info "[🙏] bitso"
+			url = "https://api.bitso.com/v3/ticker/"
 			request.get url, { json: true }, (err, data, body) ->
-				info "[💪] bitso (eth)"
-				callback(null, {
-					"name": "Bitso ETH"
-					"code": "BITSO-ETH"
-					"mxn": parseFloat(body.ask)
-				})
-		bitso_btc: (callback) ->
-			info "[🙏] bitso (btc)"
-			url = "https://bitso.com/api/v2/ticker?book=btc_mxn"
-			request.get url, { json: true }, (err, data, body) ->
-				info "[💪] bitso (btc)"
-				callback(null, {
-					"name": "Bitso BTC"
-					"code": "BITSO-BTC"
-					"mxn": parseFloat(body.ask)
-				})
-		bitso_xrp: (callback) ->
-			info "[🙏] bitso (ripple)"
-			url = "https://bitso.com/api/v2/ticker?book=xrp_mxn"
-			request.get url, { json: true }, (err, data, body) ->
-				info "[💪] bitso (ripple)"
-				callback(null, {
-					"name": "Bitso Ripple"
-					"code": "BITSO-XRP"
-					"mxn": parseFloat(body.ask)
-				})
+				info "[💪] bitso"
+				validCoins = {
+					btc_mxn: ["Bitso BTC", "BITSO-BTC"]
+					eth_mxn: ["Bitso ETH", "BITSO-ETH"]
+					xrp_mxn: ["Bitso XRP", "BITSO-XRP"]
+					bch_btc: ["Bitso BCH", "BITSO-BCH"]
+				}
+				r = {}
+				for book in body.payload
+					if validCoins[book.book]
+						r[book.book] = {
+							"name": validCoins[book.book][0]
+							"code": validCoins[book.book][1]
+							"#{book.book.split('_')[1]}": book.ask
+						}
+				callback(null, r)
 		volabit: (callback) ->
 			info "[🙏] coinmonitor"
 			url = 'http://mx.coinmonitor.info/data_mx.json'
@@ -119,19 +109,23 @@ getDataFromSources = ->
 		info "All data loaded"
 		rows = data.coinmarketcap
 		rows = rows.concat data.official
-		{ bsf, bitso_eth, bitso_btc, bitso_xrp, volabit, avocado } = data
+		{ bsf, bitso, volabit, avocado } = data
+		{ btc_mxn, eth_mxn, xrp_mxn, bch_btc } = bitso
 
 		btc = JSON.parse(JSON.stringify(rows.filter((e) -> e.code is 'BTC')[0]))
 		mxn = rows.filter((e) -> e.code is 'MXN')[0]
 		avocado.usd = parseFloat(mxn.usd * avocado.mxn).toFixed(8)
-		bitso_eth.usd = parseFloat(mxn.usd * bitso_eth.mxn).toFixed(8)
-		bitso_btc.usd = parseFloat(mxn.usd * bitso_btc.mxn).toFixed(8)
-		bitso_xrp.usd = parseFloat(mxn.usd * bitso_xrp.mxn).toFixed(8)
+		btc_mxn.usd = parseFloat(mxn.usd * btc_mxn.mxn).toFixed(8)
+		eth_mxn.usd = parseFloat(mxn.usd * eth_mxn.mxn).toFixed(8)
+		xrp_mxn.usd = parseFloat(mxn.usd * xrp_mxn.mxn).toFixed(8)
+		bch_btc.usd = parseFloat(btc.usd * bch_btc.btc).toFixed(8)
 		volabit.usd = parseFloat(mxn.usd * volabit.mxn).toFixed(8)
+
 		rows.push avocado
-		rows.push bitso_eth
-		rows.push bitso_btc
-		rows.push bitso_xrp
+		rows.push btc_mxn
+		rows.push eth_mxn
+		rows.push xrp_mxn
+		rows.push bch_btc
 		rows.push volabit
 		rows.push bsf
 
