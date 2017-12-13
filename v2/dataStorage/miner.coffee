@@ -146,36 +146,26 @@ getDataFromSources = ->
 				coin.code = coin.name.replace(/\s/g,'').toUpperCase()
 			return coin
 
-		console.log(
-			rows
-				.filter (value)->
-					return rows.filter((e)-> e.code is value.code).length isnt 1
-				.map ({name, code})-> "#{code} #{name}"
-				.sort()
-		)
-		smart = JSON.parse(JSON.stringify(rows.filter((e) -> e.code is 'SMARTCASH')[0]))
-		console.log(smart)
+		q.push rows
 
-		# q.push rows
+	brain = redis.createClient()
 
-	# brain = redis.createClient()
+	q = queue (coin, callback) ->
+		brain.select 1
+		brain.set "#{coin.code}:#{coin.key}", coin.value
+		brain.select 0
+		brain.set "#{coin.code}", coin.name
+		callback()
+	, 10
 
-	# q = queue (coin, callback) ->
-	# 	brain.select 1
-	# 	brain.set "#{coin.code}:#{coin.key}", coin.value
-	# 	brain.select 0
-	# 	brain.set "#{coin.code}", coin.name
-	# 	callback()
-	# , 10
-
-	# q.drain = ->
-	# 	return if q.running() + q.length() isnt 0
-	# 	brain.quit()
-	# 	info "Finished inserting coins into the DB"
+	q.drain = ->
+		return if q.running() + q.length() isnt 0
+		brain.quit()
+		info "Finished inserting coins into the DB"
 
 info "Starting miner schedule"
-# cronSched = later.parse.cron '* * * * *'
-# interval = later.setInterval ->
-# 	getDataFromSources()
-# , cronSched
-getDataFromSources()
+cronSched = later.parse.cron '* * * * *'
+interval = later.setInterval ->
+	getDataFromSources()
+, cronSched
+# getDataFromSources()
