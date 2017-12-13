@@ -23,7 +23,7 @@ getDataFromSources = ->
 
 		coinmarketcap: (callback) ->
 			info "[🙏] coinmarketcap"
-			url = 'https://api.coinmarketcap.com/v1/ticker/'
+			url = 'https://api.coinmarketcap.com/v1/ticker/?limit=0'
 			request.get url, {json:true}, (err, response, rs) ->
 				info "[💪] coinmarketcap"
 				rows = []
@@ -140,25 +140,42 @@ getDataFromSources = ->
 			delete e.btc
 			return e
 
-		q.push rows
+		rows.map (coin)->
+			hasDupe = rows.filter((e)-> e.code is coin.code).length isnt 1
+			if hasDupe
+				coin.code = coin.name.replace(/\s/g,'').toUpperCase()
+			return coin
 
-	brain = redis.createClient()
+		console.log(
+			rows
+				.filter (value)->
+					return rows.filter((e)-> e.code is value.code).length isnt 1
+				.map ({name, code})-> "#{code} #{name}"
+				.sort()
+		)
+		smart = JSON.parse(JSON.stringify(rows.filter((e) -> e.code is 'SMARTCASH')[0]))
+		console.log(smart)
 
-	q = queue (coin, callback) ->
-		brain.select 1
-		brain.set "#{coin.code}:#{coin.key}", coin.value
-		brain.select 0
-		brain.set "#{coin.code}", coin.name
-		callback()
-	, 10
+		# q.push rows
 
-	q.drain = ->
-		return if q.running() + q.length() isnt 0
-		brain.quit()
-		info "Finished inserting coins into the DB"
+	# brain = redis.createClient()
 
-cronSched = later.parse.cron '* * * * *'
-interval = later.setInterval ->
-	getDataFromSources()
-, cronSched
-# getDataFromSources()
+	# q = queue (coin, callback) ->
+	# 	brain.select 1
+	# 	brain.set "#{coin.code}:#{coin.key}", coin.value
+	# 	brain.select 0
+	# 	brain.set "#{coin.code}", coin.name
+	# 	callback()
+	# , 10
+
+	# q.drain = ->
+	# 	return if q.running() + q.length() isnt 0
+	# 	brain.quit()
+	# 	info "Finished inserting coins into the DB"
+
+info "Starting miner schedule"
+# cronSched = later.parse.cron '* * * * *'
+# interval = later.setInterval ->
+# 	getDataFromSources()
+# , cronSched
+getDataFromSources()
