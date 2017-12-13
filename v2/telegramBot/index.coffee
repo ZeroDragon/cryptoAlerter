@@ -26,16 +26,31 @@ bot.onText /^help$|^\?$|^start$|^\/start$/i, (msg, match) ->
 
 		Commands:
 			`help` | `?` | `start` | `/start` Answer with this message
+			`search <part of name>` returns a list of 10 guessed coins based on provided string
 			`rate <coin>` returns current rate for requested coin code
 			`rate <coin> in <other coin>` return current rate for requested coin in another coin rate
 			`convert <ammount> <coin> to <another coin>` converts value from one coin to another coin
-			`now in <coin>` return last hour max, min and last value for requested coin
 			`new alert` starts the new alert setup wizard
 			`alerts` lists your alerts
 			`reminders` list your reminders
-			'donate' shows where you can send your love
+			`donate` shows where you can send your love
 	"""
 	sendMessage msg.chat.id, message, btnsMarkup([["HELP", "RATE"], ["NOW IN", "CONVERT"], ["NEW ALERT", "ALERTS"], ["DONATE"]])
+
+bot.onText /^search (.*)$/i, (msg, match) ->
+	return if (msg.from.id isnt msg.chat.id)
+	return if match[1].indexOf(' ') isnt -1
+	possibles = brain.guessCoins(match[1]).map (e)->
+		value = e.value.toFixed(8).split('.')
+		value = parseInt(value[0]).toLocaleString() + '.' + value[1]
+		return {
+			name: e.name
+			code: e.code
+		}
+	message = []
+	for coin in possibles[0..10]
+		message.push "#{coin.code} -> #{coin.name}"
+	sendMessage msg.chat.id, message.join("\n")
 
 bot.onText /^rate$/i, (msg, match) ->
 	interactive.setSmallMemory msg.from.id, { status: 'needcoin4rate' }
